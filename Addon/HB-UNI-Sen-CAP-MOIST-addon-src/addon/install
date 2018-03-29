@@ -3,6 +3,7 @@
 ADDON_NAME=hbunisencapmoist
 DEVICE="HB-UNI-Sen-CAP-MOIST"
 DEVICE_IMG=hb-uni-sen-cap-moist.png
+DEVICE_THUMB=hb-uni-sen-cap-moist_thumb.png
 DEVICE_DESC="kapazitiver Bodenfeuchtesensor"
 
 mount -o remount,rw /
@@ -10,7 +11,6 @@ mount -o remount,rw /
 ##########################################
 ### New DEVICE HB-UNI-Sen-CAP-MOIST    ###
 ##########################################
-DEVICE_THUMB=${DEVICE_IMG}_thumb.png
 
 ### Copy new devices Files ###
 cp -a firmware/rftypes/* /firmware/rftypes/
