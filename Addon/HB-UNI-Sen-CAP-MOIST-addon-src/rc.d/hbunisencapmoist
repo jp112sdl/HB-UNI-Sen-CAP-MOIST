@@ -4,18 +4,18 @@ DEVICE="HB-UNI-Sen-CAP-MOIST"
 NAME=hbunisencapmoist
 FIRMWARE_FILE=/firmware/rftypes/hb_unisen_capmoist.xml
 
-
 ADDON_DIR=/usr/local/addons/${NAME}
 WWW_DIR=/etc/config/addons/www/${NAME}
 PIDFILE=/var/run/$NAME.pid
 LOGFILE=/var/log/$NAME.log
+ERRFILE=/var/log/$NAME.err
 
 case "$1" in
 	""|start)
 		echo 'Starting...'
 		if [ ! -f ${ADDON_DIR}/installed ] || [ ! -f ${FIRMWARE_FILE} ]; then
 			cd ${ADDON_DIR}
-			./install  > $LOGFILE 2> /dev/null & echo $!> $PIDFILE
+			echo $!> $PIDFILE & ./install > $LOGFILE 2>$ERRFILE
 		else
 			echo "Nothing to do for $DEVICE"
 		fi
@@ -26,19 +26,19 @@ case "$1" in
 	;;
 
 	uninstall)
-    	cd ${ADDON_DIR}
-    	./uninstall  > $LOGFILE 2> /dev/null & echo $!> $PIDFILE
-    	cd /
-    	rm -rf $ADDON_DIR
-    	rm -rf $WWW_DIR
-    ;;
+    		cd ${ADDON_DIR}
+    		echo $!> $PIDFILE & ./uninstall > $LOGFILE 2>$ERRFILE
+    		cd /
+    		rm -rf $ADDON_DIR
+    		rm -rf $WWW_DIR
+    	;;
   
 	restart|reload)
   	  # Operations to stop and start (restart) the addon
   	  stop
   	  sleep 2
   	  start
-    ;;
+    	;;
 
 	info)
 		echo "Info: <b>$DEVICE Addon</b><br>"
@@ -51,9 +51,9 @@ case "$1" in
 	;;
 	
 	*)
-	echo "Usage: $NAME {start|stop|restart|info|uninstall}" >&2
-	exit 1
-    ;;
+		echo "Usage: $NAME {start|stop|restart|info|uninstall}" >&2
+		exit 1
+    	;;
 
 esac
 

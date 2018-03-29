@@ -2,26 +2,27 @@
 
 mount -o remount,rw /
 
-device="HB-UNI-Sen-CAP-MOIST"
-device_img=hb-uni-sen-cap-moist.png
-device_thumb=hb-uni-sen-cap-moist_thumb.png
-firmware_file=/firmware/rftypes/hb_unisen_capmoist.xml
+DEVICE="HB-UNI-Sen-CAP-MOIST"
+DEVICE_IMG=hb-uni-sen-cap-moist.png
+FIRMWARE_FILE=/firmware/rftypes/hb_unisen_capmoist.xml
+
+DEVICE_THUMB=${DEVICE_IMG}_thumb.png
 
 devdescrFile="/www/config/devdescr/DEVDB.tcl"
-devdescrSearch=" $device {{50 \/config\/img\/devices\/50\/$device_thumb} {250 \/config\/img\/devices\/250\/$device_img}} "
+devdescrSearch="$DEVICE {{50 \/config\/img\/devices\/50\/$DEVICE_THUMB} {250 \/config\/img\/devices\/250\/$DEVICE_IMG}} "
 
-if [ "`cat $devdescrFile | grep \"$device\"`" ]; then
+if [ "`cat $devdescrFile | grep \"$DEVICE\"`" ]; then
         sed -i "s/\($devdescrSearch\)//g" $devdescrFile
 fi
 
 webuiFile="/www/webui/webui.js"
-if [ "`cat $webuiFile | grep \"$device\"`" ]; then
-        sed -i "/\($device\)/d" $webuiFile
+if [ "`cat $webuiFile | grep \"$DEVICE\"`" ]; then
+        sed -i "/\($DEVICE\)/d" $webuiFile
 fi
 
-rm -f $firmware_file
-rm -f /www/config/img/devices/250/$device_img
-rm -f /www/config/img/devices/50/$device_thumb
+rm -f $FIRMWARE_FILE
+rm -f /www/config/img/devices/250/$DEVICE_IMG
+rm -f /www/config/img/devices/50/$DEVICE_THUMB
 
 sync
 mount -o remount,ro /
