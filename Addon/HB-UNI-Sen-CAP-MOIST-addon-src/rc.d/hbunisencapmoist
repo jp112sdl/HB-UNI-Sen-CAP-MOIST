@@ -1,62 +1,60 @@
 #!/bin/sh
 
+DEVICE="HB-UNI-Sen-CAP-MOIST"
 NAME=hbunisencapmoist
-PIDFILE=/var/run/$NAME.pid
-LOGFILE=/var/log/$NAME.log
+FIRMWARE_FILE=/firmware/rftypes/hb_unisen_capmoist.xml
+
 
 ADDON_DIR=/usr/local/addons/${NAME}
 WWW_DIR=/etc/config/addons/www/${NAME}
-RCD_DIR=/usr/local/etc/config/rc.d
-
-start() 
-{
-  echo 'Starting...'
-  if [ ! -f ${ADDON_DIR}/installed ] || [ ! -f /firmware/rftypes/hb_unisen_capmoist.xml ]; then
-    cd ${ADDON_DIR}
-    ./installHBUNISENCAPMOIST  > $LOGFILE 2> /dev/null & echo $!> $PIDFILE
-  else
-   echo "Nothing to do."
-  fi
-}
-
-stop() 
-{
-  echo 'Stopped'
-}
+PIDFILE=/var/run/$NAME.pid
+LOGFILE=/var/log/$NAME.log
 
 case "$1" in
-start)
-start
-;;
-stop)
-stop
-;;
-uninstall)
-    mount -o remount,rw /
-    rm -f /firmware/rftypes/hb_unisen_capmoist.xml
-    rm -f /www/config/img/devices/50/hb-uni-sen-cap-moist*
-    rm -f /www/config/img/devices/250/hb-uni-sen-cap-moist*
-    rm -rf $ADDON_DIR
-    rm -rf $WWW_DIR
-    mount -o remount,ro /
-  ;;
-  
-restart)
-stop
-start
-;;
+	""|start)
+		echo 'Starting...'
+		if [ ! -f ${ADDON_DIR}/installed ] || [ ! -f ${FIRMWARE_FILE} ]; then
+			cd ${ADDON_DIR}
+			./install  > $LOGFILE 2> /dev/null & echo $!> $PIDFILE
+		else
+			echo "Nothing to do for $DEVICE"
+		fi
+	;;
 
-info)
-  echo "Info: <b>HB-UNI-Sen-CAP-MOIST Addon</b><br>"
-  echo "Info: <a href='https://github.com/jp112sdl/HB-UNI-Sen-CAP-MOIST'>https://github.com/jp112sdl/HB-UNI-Sen-CAP-MOIST</a>"
-  echo "Version: $(cat ${ADDON_DIR}/VERSION)"
-  echo "Name: HB-UNI-Sen-CAP-MOIST"
-  echo "Operations: uninstall"
-  #echo "Config-Url: ${CONFIG_URL}"
-  echo "Update: /addons/hbunisencapmoist/update-check.cgi"
+	stop)
+		echo "Nothing to stop..."
+	;;
+
+	uninstall)
+    	cd ${ADDON_DIR}
+    	./uninstall  > $LOGFILE 2> /dev/null & echo $!> $PIDFILE
+    	cd /
+    	rm -rf $ADDON_DIR
+    	rm -rf $WWW_DIR
     ;;
+  
+	restart|reload)
+  	  # Operations to stop and start (restart) the addon
+  	  stop
+  	  sleep 2
+  	  start
+    ;;
+
+	info)
+		echo "Info: <b>$DEVICE Addon</b><br>"
+		echo "Info: <a href='https://github.com/jp112sdl/$DEVICE'>https://github.com/jp112sdl/$DEVICE</a>"
+		echo "Version: $(cat ${ADDON_DIR}/VERSION)"
+		echo "Name: $DEVICE"
+		echo "Operations: uninstall"
+		#echo "Config-Url: ${CONFIG_URL}"
+		echo "Update: /addons/$NAME/update-check.cgi"
+	;;
 	
-*)
-start
-echo "Usage: $0 {start|stop|restart|uninstall}"
+	*)
+	echo "Usage: $NAME {start|stop|restart|info|uninstall}" >&2
+	exit 1
+    ;;
+
 esac
+
+exit $?

@@ -6,12 +6,13 @@ ADDON_DIR=/usr/local/addons/$ADDON_NAME
 mount -o remount,rw /
 
 ##########################################
-### New device HB-UNI-Sen-CAP-MOIST    ###
+### New device HB-UNI-Sen-CAP-MOIST ###
 ##########################################
 
 device="HB-UNI-Sen-CAP-MOIST"
 device_img=hb-uni-sen-cap-moist.png
 device_thumb=hb-uni-sen-cap-moist_thumb.png
+device_description="kapazitiver Bodenfeuchtesensor"
 
 ### Copy new devices Files ###
 cp -a firmware/rftypes/* /firmware/rftypes/
@@ -28,11 +29,9 @@ chmod 755 /www/config/img/devices/50/$device_thumb
 devdescrFile="/www/config/devdescr/DEVDB.tcl"
 devdescrSearch="array[[:space:]]*set[[:space:]]*DEV_PATHS[[:space:]]*{"
 
-devdescrInsert=""
-devdescrInsert="$devdescrInsert $device {{50 \/config\/img\/devices\/50\/$device_thumb} {250 \/config\/img\/devices\/250\/$device_img}} "
+devdescrInsert="$device {{50 \/config\/img\/devices\/50\/$device_thumb} {250 \/config\/img\/devices\/250\/$device_img}} "
 
 if [ -z "`cat $devdescrFile | grep \"$device\"`" ]; then
-	cp -a $devdescrFile $ADDON_DIR/DEVDB.tcl.save
 	sed -i "s/\($devdescrSearch\)/\1$devdescrInsert/g" $devdescrFile
 fi
 
@@ -41,22 +40,19 @@ webuiFile="/www/webui/webui.js"
 webuiSearch="DEV_HIGHLIGHT[[:space:]]*=[[:space:]]*new Array();"
 
 webuiInsert="\n"
-webuiInsert="$webuiInsert DEV_HIGHLIGHT['$device'] = new Object();\n"
-webuiInsert="$webuiInsert DEV_LIST.push('$device');\n"
-webuiInsert="$webuiInsert DEV_DESCRIPTION['$device']='kapazitiver Bodenfeuchtesensor';\n"
-webuiInsert="$webuiInsert DEV_PATHS['$device'] = new Object();\n"
-webuiInsert="$webuiInsert DEV_PATHS['$device']['50'] = '\/config\/img\/devices\/50\/$device_thumb';\n"
-webuiInsert="$webuiInsert DEV_PATHS['$device']['250'] = '\/config\/img\/devices\/250\/$device_img';\n"
+webuiInsert="${webuiInsert}DEV_HIGHLIGHT['$device'] = new Object();\n"
+webuiInsert="${webuiInsert}DEV_LIST.push('$device');\n"
+webuiInsert="${webuiInsert}DEV_DESCRIPTION['$device']='$device_description';\n"
+webuiInsert="${webuiInsert}DEV_PATHS['$device'] = new Object();\n"
+webuiInsert="${webuiInsert}DEV_PATHS['$device']['50'] = '\/config\/img\/devices\/50\/$device_thumb';\n"
+webuiInsert="${webuiInsert}DEV_PATHS['$device']['250'] = '\/config\/img\/devices\/250\/$device_img';"
 
 if [ -z "`cat $webuiFile | grep \"$device\"`" ]; then
-	cp -a $webuiFile $ADDON_DIR/webui.js.save
 	sed -i "s/\($webuiSearch\)/\1$webuiInsert/g" $webuiFile
 fi
 
 sync
 
 mount -o remount,ro /
-
-/etc/init.d/S61rfd restart
 
 touch $ADDON_DIR/installed
