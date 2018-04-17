@@ -20,6 +20,14 @@
       <logical type="integer" min="1" max="1440" unit="Minuten" default="60" />
       <physical type="integer" interface="config" list="0" index="33.0" size="2" />
     </parameter> 
+        <parameter id="HIGH Value (Trocken [0 Prozent])">                       
+      <logical type="integer" min="0" max="1023" unit="" default="830" />
+      <physical type="integer" interface="config" list="0" index="35.0" size="2" />
+    </parameter> 
+        <parameter id="LOW Value (Nass [100 Prozent])">                       
+      <logical type="integer" min="0" max="1023" unit="" default="420" />
+      <physical type="integer" interface="config" list="0" index="37.0" size="2" />
+    </parameter> 
   </paramset>
   <channels>
     <channel index="0" type="MAINTENANCE" ui_flags="internal" class="maintenance" count="1">
