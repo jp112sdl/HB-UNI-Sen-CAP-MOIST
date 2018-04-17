@@ -67,7 +67,8 @@ Dort auf "Fertig" geklickt, wird es nun in der Geräteübersicht aufgeführt.<br
 ## Kalibrierung
 Der [Hersteller des Sensors](https://www.dfrobot.com/wiki/index.php/Capacitive_Soil_Moisture_Sensor_SKU:SEN0193) sieht eine manuelle Kalibrierung vor.<br>
 Es müssen die Spannungswerte für beide Feuchte-Grenzen (trocken / nass) ermittelt werden.<br>
-Der Wert wird beim Starten des Arduino Pro Mini im seriellen Monitor (57600 Baud) angezeigt:<br>
+Der Wert wird beim Starten des Arduino Pro Mini im seriellen Monitor (57600 Baud) angezeigt.<br>
+Siehe `Sensor Analog-Value:` <br>
 ![sermon](Images/arduino_ide_serialmonitor.png)
 
 Zur Kalibrierung startet man nun den Arduino Pro Mini ein Mal mit trockenem Sensor und ein Mal in ein Glas Wasser eingetaucht.
