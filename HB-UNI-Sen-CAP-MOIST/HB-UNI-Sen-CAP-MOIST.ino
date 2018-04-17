@@ -31,7 +31,7 @@ using namespace as;
 #define SENSOR_PIN 14
 #define SENSOR_EN_PIN 5
 
-#define COMM_TYPE BCAST 
+#define COMM_TYPE BCAST
 
 // define all device properties
 const struct DeviceInfo PROGMEM devinfo = {
@@ -129,13 +129,13 @@ class WeatherChannel : public Channel<Hal, List1, EmptyList, List4, PEERS_PER_CH
       }
       sens_val = sens_val / 10;
       digitalWrite(SENSOR_EN_PIN, LOW);
-      DPRINT(F("Sensor Analog-Value: ")); DDECLN(sens_val);
+      DPRINT(F("+Sensor Analog-Value: ")); DDECLN(sens_val);
       uint16_t range = device().getList0().HIGHValue() - device().getList0().LOWValue();
       uint16_t base = sens_val - device().getList0().LOWValue();
       uint8_t pct_inv = ((100 * base) / range);
       humidity = (pct_inv > 100) ? 0 : 100 - pct_inv;
 
-      DPRINT(F("Humidity %: ")); DDECLN(humidity);
+      DPRINT(F("+Humidity %: ")); DDECLN(humidity);
     }
 
     virtual void trigger (__attribute__ ((unused)) AlarmClock& clock) {
@@ -184,15 +184,14 @@ class UType : public MultiChannelDevice<Hal, WeatherChannel, 1, UList0> {
 
     virtual void configChanged () {
       TSDevice::configChanged();
-      DPRINTLN("Config Changed List0");
-      DPRINT("LOW BAT Limit: ");
+      DPRINT("*LOW BAT Limit: ");
       DDECLN(this->getList0().lowBatLimit());
-      DPRINT("Wake-On-Radio: ");
+      DPRINT("*Wake-On-Radio: ");
       DDECLN(this->getList0().burstRx());
       this->battery().low(this->getList0().lowBatLimit());
-      DPRINT("Sendeintervall: "); DDECLN(this->getList0().Sendeintervall());
-      DPRINT("HIGHValue: "); DDECLN(this->getList0().HIGHValue());
-      DPRINT("LOWValue: "); DDECLN(this->getList0().LOWValue());
+      DPRINT("*Sendeintervall: "); DDECLN(this->getList0().Sendeintervall());
+      DPRINT("*HIGHValue: "); DDECLN(this->getList0().HIGHValue());
+      DPRINT("*LOWValue: "); DDECLN(this->getList0().LOWValue());
     }
 };
 
