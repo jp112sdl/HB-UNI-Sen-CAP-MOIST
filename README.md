@@ -57,10 +57,9 @@ Dort auf "Fertig" geklickt, wird es nun in der Geräteübersicht aufgeführt.<br
 - HIGH Value ist der gemessene Analogwert, wenn der Sensor trocken ist.<br>
 - LOW Value ist der gemessene Analogwert, wenn der Sensor komplett nass (in Wasser eingetaucht) ist.<br>
 
-## Wert anzeigen
-
 ![addon](Images/ccu_einstellungen.png)
 <br><br>
+## Wert anzeigen
 Unter "Status und Bedienung" -> "Geräte" kann der Feuchtigkeitswert angezeigt werden.<br>
 Damit man den Datenpunkt auch in Diagrammen verwenden kann, habe ich den systeminternen Datentyp `HUMIDITY` verwendet.
 Das hat jedoch einen kleinen Schönheitsfehler zur Folge: Die Bezeichnung lautet "Rel. Luftfeuchte".
