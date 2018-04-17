@@ -1,7 +1,11 @@
 //- -----------------------------------------------------------------------------------------------------------------------
 // AskSin++
 // 2016-10-31 papa Creative Commons - http://creativecommons.org/licenses/by-nc-sa/3.0/de/
+// 2018-04-16 jp112sdl Creative Commons - http://creativecommons.org/licenses/by-nc-sa/3.0/de/
 //- -----------------------------------------------------------------------------------------------------------------------
+
+//Sensor:
+//https://www.dfrobot.com/wiki/index.php/Capacitive_Soil_Moisture_Sensor_SKU:SEN0193
 
 // define this to read the device id, serial and device type from bootloader section
 // #define USE_OTA_BOOTLOADER
@@ -21,9 +25,13 @@
 // number of available peers per channel
 #define PEERS_PER_CHANNEL 6
 
-
 // all library classes are placed in the namespace 'as'
 using namespace as;
+
+#define SENSOR_PIN 14
+#define SENSOR_EN_PIN 5
+
+#define COMM_TYPE BCAST 
 
 // define all device properties
 const struct DeviceInfo PROGMEM devinfo = {
@@ -41,7 +49,7 @@ const struct DeviceInfo PROGMEM devinfo = {
 typedef AvrSPI<10, 11, 12, 13> SPIType;
 typedef Radio<SPIType, 2> RadioType;
 typedef StatusLed<4> LedType;
-typedef AskSin<LedType, BatterySensor, RadioType> BaseHal;
+typedef AskSin<LedType, BatterySensorUni<17, 6>, RadioType> BaseHal;
 class Hal : public BaseHal {
   public:
     void init (const HMID& id) {
@@ -58,28 +66,46 @@ class Hal : public BaseHal {
 } hal;
 
 
-DEFREGISTER(UReg0, MASTERID_REGS, DREG_BURSTRX, DREG_LOWBATLIMIT, 0x21, 0x22)
+DEFREGISTER(UReg0, MASTERID_REGS, DREG_BURSTRX, DREG_LOWBATLIMIT, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26)
 class UList0 : public RegList0<UReg0> {
   public:
     UList0 (uint16_t addr) : RegList0<UReg0>(addr) {}
+
     bool Sendeintervall (uint16_t value) const {
       return this->writeRegister(0x21, (value >> 8) & 0xff) && this->writeRegister(0x22, value & 0xff);
     }
     uint16_t Sendeintervall () const {
       return (this->readRegister(0x21, 0) << 8) + this->readRegister(0x22, 0);
     }
+
+    bool HIGHValue (uint16_t value) const {
+      return this->writeRegister(0x23, (value >> 8) & 0xff) && this->writeRegister(0x24, value & 0xff);
+    }
+    uint16_t HIGHValue () const {
+      return (this->readRegister(0x23, 0) << 8) + this->readRegister(0x24, 0);
+    }
+
+    bool LOWValue (uint16_t value) const {
+      return this->writeRegister(0x25, (value >> 8) & 0xff) && this->writeRegister(0x26, value & 0xff);
+    }
+    uint16_t LOWValue () const {
+      return (this->readRegister(0x25, 0) << 8) + this->readRegister(0x26, 0);
+    }
+
     void defaults () {
       clear();
       burstRx(false);
       lowBatLimit(22);
       Sendeintervall(30);
+      HIGHValue(830);
+      LOWValue(420);
     }
 };
 
 class WeatherEventMsg : public Message {
   public:
     void init(uint8_t msgcnt, uint8_t val, bool batlow) {
-      Message::init(0x0c, msgcnt, 0x70, BCAST , batlow ? 0x80 : 0x00, 0x00);
+      Message::init(0x0c, msgcnt, 0x70, COMM_TYPE , batlow ? 0x80 : 0x00, 0x00);
       pload[0] = val;
     }
 };
@@ -87,17 +113,38 @@ class WeatherEventMsg : public Message {
 class WeatherChannel : public Channel<Hal, List1, EmptyList, List4, PEERS_PER_CHANNEL, UList0>, public Alarm {
     WeatherEventMsg msg;
     uint16_t      millis;
+    uint8_t       humidity;
 
   public:
-    WeatherChannel () : Channel(), Alarm(5), millis(0) {}
+    WeatherChannel () : Channel(), Alarm(0), millis(0) {}
     virtual ~WeatherChannel () {}
 
+    void measure() {
+      digitalWrite(SENSOR_EN_PIN, HIGH);
+      _delay_ms(500);
+      uint16_t sens_val = 0;
+      for (uint8_t i = 0; i < 10; i++) {
+        sens_val += analogRead(SENSOR_PIN);
+        _delay_ms(10);
+      }
+      sens_val = sens_val / 10;
+      digitalWrite(SENSOR_EN_PIN, LOW);
+      DPRINT(F("Sensor Analog-Value: ")); DDECLN(sens_val);
+      uint16_t range = device().getList0().HIGHValue() - device().getList0().LOWValue();
+      uint16_t base = sens_val - device().getList0().LOWValue();
+      uint8_t pct_inv = ((100 * base) / range);
+      humidity = (pct_inv > 100) ? 0 : 100 - pct_inv;
+
+      DPRINT(F("Humidity %: ")); DDECLN(humidity);
+    }
+
     virtual void trigger (__attribute__ ((unused)) AlarmClock& clock) {
+      measure();
+
       uint8_t msgcnt = device().nextcount();
       tick = delay();
       sysclock.add(*this);
-
-      msg.init(msgcnt, 65, device().battery().low());
+      msg.init(msgcnt, humidity, device().battery().low());
 
       device().sendPeerEvent(msg, *this);
     }
@@ -114,6 +161,8 @@ class WeatherChannel : public Channel<Hal, List1, EmptyList, List4, PEERS_PER_CH
     }
 
     void setup(Device<Hal, UList0>* dev, uint8_t number, uint16_t addr) {
+      pinMode(SENSOR_PIN, INPUT);
+      pinMode(SENSOR_EN_PIN, OUTPUT);
       Channel::setup(dev, number, addr);
       sysclock.add(*this);
     }
@@ -142,6 +191,8 @@ class UType : public MultiChannelDevice<Hal, WeatherChannel, 1, UList0> {
       DDECLN(this->getList0().burstRx());
       this->battery().low(this->getList0().lowBatLimit());
       DPRINT("Sendeintervall: "); DDECLN(this->getList0().Sendeintervall());
+      DPRINT("HIGHValue: "); DDECLN(this->getList0().HIGHValue());
+      DPRINT("LOWValue: "); DDECLN(this->getList0().LOWValue());
     }
 };
 
