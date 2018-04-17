@@ -65,8 +65,19 @@ Dort auf "Fertig" geklickt, wird es nun in der Geräteübersicht aufgeführt.<br
 ![addon](Images/ccu_geraete.png)
 <br><br>
 ## Kalibrierung
-- in progress
+Der [Hersteller des Sensors](https://www.dfrobot.com/wiki/index.php/Capacitive_Soil_Moisture_Sensor_SKU:SEN0193) sieht eine manuelle Kalibrierung vor.<br>
+Es müssen die Spannungswerte für beide Feuchte-Grenzen (trocken / nass) ermittelt werden.<br>
+Der Wert wird beim Starten des Arduino Pro Mini im seriellen Monitor (57600 Baud) angezeigt:<br>
+![sermon](Images/arduino_ide_serialmonitor.png)
+
+Zur Kalibrierung startet man nun den Arduino Pro Mini ein Mal mit trockenem Sensor und ein Mal in ein Glas Wasser eingetaucht.
+Dabei ergeben sich 2 Werte:<br>
+<img src="Images/sensor_trocken.png" width=300>&nbsp;<img src="Images/sensor_nass.png" width=300>
+<br>
+_Der Wert im Trockenen muss höher sein als im Nassen!_
+
 <br><br>
+Beide Werte können nun in der WebUI-Gerätekonfiguration eingegeben werden.
 
 ## Gerät einstellen
 - Low Bat Schwelle
