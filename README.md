@@ -52,6 +52,10 @@ Anschließend ist das Gerät im Posteingang zu finden.<br>
 Dort auf "Fertig" geklickt, wird es nun in der Geräteübersicht aufgeführt.<br>
 ![addon](Images/ccu_geraete.png)
 <br><br>
+## Kalibrierung
+- in progress
+<br><br>
+
 ## Gerät einstellen
 - Das Sendeintervall kann zwischen 1 und 1440 Minuten eingestellt werden.<br>
 - HIGH Value ist der gemessene Analogwert, wenn der Sensor trocken ist.<br>
