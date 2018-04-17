@@ -52,10 +52,11 @@ Anschließend ist das Gerät im Posteingang zu finden.<br>
 Dort auf "Fertig" geklickt, wird es nun in der Geräteübersicht aufgeführt.<br>
 ![addon](Images/ccu_geraete.png)
 <br><br>
-##Gerät einstellen
+## Gerät einstellen
 - Das Sendeintervall kann zwischen 1 und 1440 Minuten eingestellt werden.<br>
 - HIGH Value ist der gemessene Analogwert, wenn der Sensor trocken ist.<br>
 - LOW Value ist der gemessene Analogwert, wenn der Sensor komplett nass (in Wasser eingetaucht) ist.<br>
+
 ![addon](Images/ccu_einstellungen.png)
 <br><br>
 Unter "Status und Bedienung" -> "Geräte" kann der Feuchtigkeitswert angezeigt werden.<br>
