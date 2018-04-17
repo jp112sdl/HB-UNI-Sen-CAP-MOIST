@@ -69,6 +69,9 @@ Dort auf "Fertig" geklickt, wird es nun in der Geräteübersicht aufgeführt.<br
 <br><br>
 
 ## Gerät einstellen
+- Low Bat Schwelle
+  - mit StepUp: ~2.2V
+  - ohne StepUp: ~3.7V
 - Das Sendeintervall kann zwischen 1 und 1440 Minuten eingestellt werden.<br>
 - HIGH Value ist der gemessene Analogwert, wenn der Sensor trocken ist.<br>
 - LOW Value ist der gemessene Analogwert, wenn der Sensor komplett nass (in Wasser eingetaucht) ist.<br>
