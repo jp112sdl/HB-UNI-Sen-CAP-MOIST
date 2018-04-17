@@ -1,7 +1,13 @@
 # HB-UNI-Sen-CAP-MOIST
 ## Funk "kapazitiver Bodenfeuchtesensor" für die Integration in HomeMatic
 
+## Verdrahtung 1 - mit StepUp
+
 ![wiring](Images/wiring.png)
+
+## Verdrahtung 2 - ohne StepUp
+
+![wiring](Images/wiring2.png)
 
 ## benötigte Hardware
 * 1x Arduino Pro Mini **ATmega328P (3.3V / 8MHz)**
