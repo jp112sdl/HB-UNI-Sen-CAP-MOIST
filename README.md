@@ -1,6 +1,5 @@
 # HB-UNI-Sen-CAP-MOIST
 ## Funk "kapazitiver Bodenfeuchtesensor" für die Integration in HomeMatic
-## +++ work in progress +++
 
 ![wiring](Images/wiring.png)
 
@@ -11,6 +10,9 @@
 * 1x Taster (beliebig... irgendwas, das beim Draufdrücken schließt :smiley:)
 * 1x LED 
 * 1x Widerstand 330 Ohm
+* 1x Widerstand 100k
+* 1x Widerstand 470k
+* 1x StepUp-Wandler **3.3V** (BL8530 o.ä.) [ebay](https://www.ebay.de/itm/382058974507)
 * 1x kapazitiver Feuchtesensor (0...3V Ausgangsspannung) [ebay](https://www.ebay.de/itm/152873639264)
 * Draht, um die Komponenten zu verbinden
 
