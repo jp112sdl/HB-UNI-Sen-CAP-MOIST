@@ -28,7 +28,7 @@ Die Schaltung mit StepUp-Converter ist wesentlich kompakter, da sie mit weniger 
 Wer aber möglichst wenig bauen/verdrahten möchte, ist auch mit der Variante 2 gut bedient.<br>
 Es sind dann jedoch 3x AA(A)-Batterien (oder 4x 1.2V Akkus) notwendig.<br>
 Der LDO auf dem Pro Mini kann lt. Datenblatt **max. 5.5V Eingangsspannung** vertragen.<br>
-Mit 6V (4x AA Batterien) lief er im Feldversuch auch, was ich jedoch nicht empfehle. Vorzugsweise sind 3x AA Batterien (4.5V) zu verwenden oder 4x AA Akkus (1.2V).
+Mit 6V (4x AA Batterien) lief er im Feldversuch auch, was ich jedoch nicht empfehle. Vorzugsweise sind 3x AA Batterien (4.5V) zu verwenden oder 4x AA 1.2V-Akkus (4.8V).
 
 ## Code flashen
 - [AskSinPP Library](https://github.com/pa-pa/AskSinPP) in der Arduino IDE installieren
