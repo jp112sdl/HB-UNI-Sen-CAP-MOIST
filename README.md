@@ -52,10 +52,15 @@ Anschließend ist das Gerät im Posteingang zu finden.<br>
 Dort auf "Fertig" geklickt, wird es nun in der Geräteübersicht aufgeführt.<br>
 ![addon](Images/ccu_geraete.png)
 <br><br>
-Das Sendeintervall kann zwischen 60 und 600 Sekunden eingestellt werden.<br>
+Das Sendeintervall kann zwischen 1 und 1440 Minuten eingestellt werden.<br>
+HIGH Value ist der gemessene Analogwert, wenn der Sensor trocken ist.<br>
+LOW Value ist der gemessene Analogwert, wenn der Sensor komplett nass (in Wasser eingetaucht) ist.<br>
 ![addon](Images/ccu_einstellungen.png)
 <br><br>
-Unter "Status und Bedienung" -> "Geräte" können die einzelnen Werte angezeigt werden.<br>
+Unter "Status und Bedienung" -> "Geräte" kann der Feuchtigkeitswert angezeigt werden.<br>
+Damit man den Datenpunkt auch in Diagrammen verwenden kann, habe ich den systeminternen Datentyp `HUMIDITY` verwendet.
+Das hat jedoch einen kleinen Schönheitsfehler zur Folge: Die Bezeichnung lautet "Rel. Luftfeuchte".
+Damit kann man wohl leben... :) 
 ![addon](Images/ccu_status.png)
 
 
