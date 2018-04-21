@@ -33,7 +33,7 @@ Mit 6V (4x AA Batterien) lief er im Feldversuch auch, was ich jedoch nicht empfe
 ## Code flashen
 - [AskSinPP Library](https://github.com/pa-pa/AskSinPP) in der Arduino IDE installieren
   - Achtung: Die Lib benötigt selbst auch noch weitere Bibliotheken, siehe [README](https://github.com/pa-pa/AskSinPP#required-additional-arduino-libraries).
-- [Projekt-Datei](https://raw.githubusercontent.com/jp112sdl/HB-UNI-Sen-TEMP-DS18B20/master/HB-UNI-Sen-CAP-MOIST/HB-UNI-Sen-CAP-MOIST.ino) herunterladen.
+- [Projekt-Datei](https://raw.githubusercontent.com/jp112sdl/HB-UNI-Sen-CAP-MOIST/master/HB-UNI-Sen-CAP-MOIST/HB-UNI-Sen-CAP-MOIST.ino) herunterladen.
 - Arduino IDE öffnen
   - Heruntergeladene Projekt-Datei öffnen
   - Werkzeuge
