@@ -8,7 +8,7 @@
 //https://www.dfrobot.com/wiki/index.php/Capacitive_Soil_Moisture_Sensor_SKU:SEN0193
 
 // define this to read the device id, serial and device type from bootloader section
-// #define USE_OTA_BOOTLOADER
+#define USE_OTA_BOOTLOADER
 
 #define EI_NOTEXTERNAL
 #include <EnableInterrupt.h>
@@ -137,22 +137,22 @@ class WeatherChannel : public Channel<Hal, UList1, EmptyList, List4, PEERS_PER_C
     virtual ~WeatherChannel () {}
 
     void measure() {
-      digitalWrite(SENSOR_EN_PIN_FROM+(number()-1), HIGH);
+      digitalWrite(SENSOR_EN_PIN_FROM + (number() - 1), HIGH);
       _delay_ms(500);
       uint16_t sens_val = 0;
       for (uint8_t i = 0; i < 10; i++) {
-        sens_val += analogRead(SENSOR_PIN_FROM+(number()-1));
+        sens_val += analogRead(SENSOR_PIN_FROM + (number() - 1));
         _delay_ms(10);
       }
       sens_val = sens_val / 10;
-      digitalWrite(SENSOR_EN_PIN_FROM+(number()-1), LOW);
+      digitalWrite(SENSOR_EN_PIN_FROM + (number() - 1), LOW);
       DPRINT(F("+Sensor Analog-Value: ")); DDECLN(sens_val);
       uint16_t range = this->getList1().HIGHValue() - this->getList1().LOWValue();
       uint16_t base = sens_val - this->getList1().LOWValue();
       uint8_t pct_inv = ((100 * base) / range);
       humidity = (pct_inv > 100) ? 0 : 100 - pct_inv;
-      humidity = random(0,100);
-      DPRINT(F("+Humidity (#"));DDEC(number());DPRINT(F(") %: ")); DDECLN(humidity);
+      humidity = random(0, 100);
+      DPRINT(F("+Humidity (#")); DDEC(number()); DPRINT(F(") %: ")); DDECLN(humidity);
     }
 
     virtual void trigger (__attribute__ ((unused)) AlarmClock& clock) {
@@ -180,8 +180,8 @@ class WeatherChannel : public Channel<Hal, UList1, EmptyList, List4, PEERS_PER_C
 
     void setup(Device<Hal, UList0>* dev, uint8_t number, uint16_t addr) {
       for (int i = 0; i < SENSOR_COUNT; i++) {
-      pinMode(SENSOR_PIN_FROM + i, INPUT);
-      pinMode(SENSOR_EN_PIN_FROM + i, OUTPUT);
+        pinMode(SENSOR_PIN_FROM + i, INPUT);
+        pinMode(SENSOR_EN_PIN_FROM + i, OUTPUT);
       }
       Channel::setup(dev, number, addr);
       sysclock.add(*this);
@@ -218,6 +218,7 @@ ConfigButton<UType> cfgBtn(sdev);
 
 void setup () {
   DINIT(57600, ASKSIN_PLUS_PLUS_IDENTIFIER);
+  printDeviceInfo();
   sdev.init(hal);
   buttonISR(cfgBtn, CONFIG_BUTTON_PIN);
   sdev.initDone();
@@ -233,4 +234,19 @@ void loop() {
     hal.activity.savePower<Sleep<>>(hal);
   }
 }
+
+void printDeviceInfo() {
+  HMID ids;
+  sdev.getDeviceID(ids);
+
+  uint8_t ser[10];
+  sdev.getDeviceSerial(ser);
+
+  DPRINT("Device Info: ");
+  for (int i = 0; i < 10; i++) {
+    DPRINT(char(ser[i]));
+  }
+  DPRINT(" ("); DHEX(ids.i1); DPRINTLN(")");
+}
+
 
