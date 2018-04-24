@@ -1,5 +1,6 @@
 # HB-UNI-Sen-CAP-MOIST
 ## Funk "kapazitiver Bodenfeuchtesensor" für die Integration in HomeMatic
+### mit bis zu 7 Sensoren pro Gerät
 
 ## Verdrahtung 1 - mit StepUp
 
@@ -18,7 +19,7 @@
 * 1x Widerstand 330 Ohm (R1)
 * 1x Widerstand 100k (R2)
 * 1x Widerstand 470k (R3)
-* 1x kapazitiver Feuchtesensor (0...3V Ausgangsspannung) [ebay](https://www.ebay.de/itm/152873639264)
+* 1x ... 7x kapazitiver Feuchtesensor (0...3V Ausgangsspannung) [ebay](https://www.ebay.de/itm/152873639264)
 * optional: 1x StepUp-Wandler **3.3V** (BL8530 o.ä.) [ebay](https://www.ebay.de/itm/382058974507)
 * Draht, um die Komponenten zu verbinden
 
@@ -41,6 +42,7 @@ Mit 6V (4x AA Batterien) lief er im Feldversuch auch, was ich jedoch nicht empfe
     - Prozessor: ATmega328P (3.3V 8MHz) 
     - Port: entsprechend FTDI Adapter
 einstellen
+- ggf. Anpassungen im Code durchführen (z.B. bei mehreren Sensoren)
 - Menü "Sketch" -> "Hochladen" auswählen.
 
 ## Addon installieren
@@ -68,11 +70,11 @@ Dort auf "Fertig" geklickt, wird es nun in der Geräteübersicht aufgeführt.<br
 Der [Hersteller des Sensors](https://www.dfrobot.com/wiki/index.php/Capacitive_Soil_Moisture_Sensor_SKU:SEN0193) sieht eine manuelle Kalibrierung vor.<br>
 Es müssen die Spannungswerte für beide Feuchte-Grenzen (trocken / nass) ermittelt werden.<br>
 Der Wert wird beim Starten des Arduino Pro Mini im seriellen Monitor (57600 Baud) angezeigt.<br>
-Siehe `Sensor Analog-Value:` <br>
+Siehe `+Sensor   (#n) V:` <br>
 ![sermon](Images/arduino_ide_serialmonitor.png)
 
-Zur Kalibrierung startet man nun den Arduino Pro Mini ein Mal mit trockenem Sensor und ein Mal in ein Glas Wasser eingetaucht.
-Dabei ergeben sich 2 Werte:<br>
+Zur Kalibrierung startet man nun den Arduino Pro Mini ein Mal mit trockenen Sensoren und ein Mal in ein Glas Wasser eingetaucht.
+Dabei ergeben sich je Sensor 2 Werte:<br>
 <img src="Images/sensor_trocken.png" width=300>&nbsp;<img src="Images/sensor_nass.png" width=300>
 <br>
 _Der Wert im Trockenen muss höher sein als im Nassen!_
@@ -80,13 +82,15 @@ _Der Wert im Trockenen muss höher sein als im Nassen!_
 <br><br>
 Beide Werte können nun in der WebUI-Gerätekonfiguration eingegeben werden.
 
-## Gerät einstellen
-- Low Bat Schwelle
-  - mit StepUp: ~2.2V
-  - ohne StepUp: ~3.7V
-- Das Sendeintervall kann zwischen 1 und 1440 Minuten eingestellt werden.<br>
-- HIGH Value ist der gemessene Analogwert, wenn der Sensor trocken ist.<br>
-- LOW Value ist der gemessene Analogwert, wenn der Sensor komplett nass (in Wasser eingetaucht) ist.<br>
+## Einstellungen
+- Gerät:
+  - Low Bat Schwelle
+    - mit StepUp: ~2.2V
+    - ohne StepUp: ~3.7V
+  - Das Sendeintervall kann zwischen 1 und 1440 Minuten eingestellt werden.<br>
+- je Kanal:
+  - HIGH Value ist der gemessene Analogwert, wenn der Sensor trocken ist.<br>
+  - LOW Value ist der gemessene Analogwert, wenn der Sensor komplett nass (in Wasser eingetaucht) ist.<br>
 
 ![addon](Images/ccu_einstellungen.png)
 <br><br>
