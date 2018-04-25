@@ -106,4 +106,9 @@ Damit kann man wohl leben... :)
 Eine Verwendung in Programmen ist ebenfalls möglich.
 
 
+## Beispielaufbau
+#### (einen Deckel drucke ich noch)
+![aufbau1](Images/aufbau1.jpg)
+
+![aufbau2](Images/aufbau2.jpg)
 
