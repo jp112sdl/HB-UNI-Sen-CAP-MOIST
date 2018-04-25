@@ -172,8 +172,8 @@ class WeatherChannel : public Channel<Hal, UList1, EmptyList, List4, PEERS_PER_C
 
     void configChanged() {
       DPRINTLN(F("Config changed List1"));
-      DPRINT(F("*HIGHValue: ")); DDECLN(this->getList1().HIGHValue());
-      DPRINT(F("*LOWValue:  ")); DDECLN(this->getList1().LOWValue());
+      DPRINT(F("*HIGHValue (#"));DDEC(number());DPRINT(F("): ")); DDECLN(this->getList1().HIGHValue());
+      DPRINT(F("*LOWValue  (#"));DDEC(number());DPRINT(F("): ")); DDECLN(this->getList1().LOWValue());
     }
 
     void setup(Device<Hal, UList0>* dev, uint8_t number, uint16_t addr) {
