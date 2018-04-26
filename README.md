@@ -1,6 +1,6 @@
 # HB-UNI-Sen-CAP-MOIST
 ## Funk "kapazitiver Bodenfeuchtesensor" für die Integration in HomeMatic
-### mit bis zu 7 Sensoren pro Gerät
+#### (mit bis zu 7 Sensoren pro Gerät)
 
 ## Verdrahtung 1 - mit StepUp
 
@@ -30,6 +30,12 @@ Wer aber möglichst wenig bauen/verdrahten möchte, ist auch mit der Variante 2 
 Es sind dann jedoch 3x AA(A)-Batterien (oder 4x 1.2V Akkus) notwendig.<br>
 Der LDO auf dem Pro Mini kann lt. Datenblatt **max. 5.5V Eingangsspannung** vertragen.<br>
 Mit 6V (4x AA Batterien) lief er im Feldversuch auch, was ich jedoch nicht empfehle. Vorzugsweise sind 3x AA Batterien (4.5V) zu verwenden oder 4x AA 1.2V-Akkus (4.8V).
+
+## Universalplatine
+Wer eine eigene Platine herstellen möchte, kann auf eine Auswahl verschiedener vorgefertigter Layouts zurückgreifen.
+z.B.:
+- [PCB](https://github.com/alexreinert/PCB) von alexreinert
+- [HMSensor](https://github.com/pa-pa/HMSensor) von pa-pa
 
 ## Code flashen
 - [AskSinPP Library](https://github.com/pa-pa/AskSinPP) in der Arduino IDE installieren
