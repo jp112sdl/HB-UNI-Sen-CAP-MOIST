@@ -21,6 +21,7 @@
 // Arduino Pro mini 8 Mhz
 // Arduino pin for the config button
 #define CONFIG_BUTTON_PIN 8
+//#define ISR_PIN           9
 
 // number of available peers per channel
 #define PEERS_PER_CHANNEL 6
@@ -35,6 +36,8 @@ using namespace as;
 #define BATT_EN_PIN        3
 #define BATT_SENS_PIN      A6
 
+volatile bool isrDetected = false;
+
 //SENSOR_EN_PIN und SENSOR_PIN sind immer paarweise und kommagetrennt hinzuzufügen:
 //Beispiel für 3 Sensoren
 //byte SENSOR_EN_PINS[]      {5 , 6, 7}; //VCC Pin des Sensors
@@ -43,10 +46,20 @@ using namespace as;
 byte SENSOR_EN_PINS[]      {5 }; //VCC Pin des Sensors
 byte SENSOR_PINS[]         {14}; //AOut Pin des Sensors
 
+#define sendISR(pin) class sendISRHandler { \
+    public: \
+      static void isr () { isrDetected = true; } \
+  }; \
+  pinMode(pin, INPUT_PULLUP); \
+  if( digitalPinToInterrupt(pin) == NOT_AN_INTERRUPT ) \
+    enableInterrupt(pin,sendISRHandler::isr,RISING); \
+  else \
+    attachInterrupt(digitalPinToInterrupt(pin),sendISRHandler::isr,RISING);
+
 // define all device properties
 const struct DeviceInfo PROGMEM devinfo = {
-  {0xF3, 0x11, 0x01},          // Device ID
-  "JPCAPM0001",                // Device Serial
+  {0xF3, 0x11, 0x03},          // Device ID
+  "JPCAPM0003",                // Device Serial
   {0xF3, 0x11},                // Device Model
   0x10,                        // Firmware Version
   as::DeviceType::THSensor,    // Device Type
@@ -149,21 +162,29 @@ class WeatherChannel : public Channel<Hal, UList1, EmptyList, List4, PEERS_PER_C
       }
       sens_val = sens_val / 10;
       digitalWrite(SENSOR_EN_PINS[(number() - 1)], LOW);
-      DPRINT(F("+Sensor   (#")); DDEC(number()); DPRINT(F(") V: ")); DDECLN(sens_val);
+      DPRINT(F("+Sensor    (#")); DDEC(number()); DPRINT(F(") V: ")); DDECLN(sens_val);
       uint16_t range = this->getList1().HIGHValue() - this->getList1().LOWValue();
       uint16_t base = sens_val - this->getList1().LOWValue();
       uint8_t pct_inv = ((100 * base) / range);
       humidity = (pct_inv > 100) ? 0 : 100 - pct_inv;
-      DPRINT(F("+Humidity (#")); DDEC(number()); DPRINT(F(") %: ")); DDECLN(humidity);
+      DPRINT(F("+Humidity  (#")); DDEC(number()); DPRINT(F(") %: ")); DDECLN(humidity);
+    }
+
+    void irq () {
+      sysclock.cancel(*this);
+      processMessage();
+      sysclock.add(*this);
     }
 
     virtual void trigger (__attribute__ ((unused)) AlarmClock& clock) {
-      measure();
-
-      uint8_t msgcnt = device().nextcount();
+      processMessage();
       tick = delay();
       sysclock.add(*this);
-      msg.init(msgcnt, number(), humidity, device().battery().low());
+    }
+
+    void processMessage() {
+      measure();
+      msg.init(device().nextcount(), number(), humidity, device().battery().low());
       device().sendPeerEvent(msg, *this);
     }
 
@@ -226,6 +247,9 @@ void setup () {
     printDeviceInfo();
     sdev.init(hal);
     buttonISR(cfgBtn, CONFIG_BUTTON_PIN);
+    #ifdef ISR_PIN
+      sendISR(ISR_PIN);
+    #endif
     sdev.initDone();
   }
 }
@@ -233,7 +257,17 @@ void setup () {
 void loop() {
   bool worked = hal.runready();
   bool poll = sdev.pollRadio();
+
   if ( worked == false && poll == false ) {
+
+    if (isrDetected) {
+      DPRINTLN(F("manual button pressed"));
+      for (int i = 1; i <= sizeof(SENSOR_PINS); i++) {
+        sdev.channel(i).irq();
+      }
+      isrDetected = false;
+    }
+
     if ( hal.battery.critical() ) {
       hal.activity.sleepForever(hal);
     }
