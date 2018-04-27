@@ -41,7 +41,7 @@ volatile bool isrDetected = false;
 //SENSOR_EN_PIN und SENSOR_PIN sind immer paarweise und kommagetrennt hinzuzufügen:
 //Beispiel für 3 Sensoren
 //byte SENSOR_EN_PINS[]      {5 , 6, 7}; //VCC Pin des Sensors
-//byte SENSOR_PINS[]         {14,15,16}; //AOut Pin des Sensors
+//byte SENSOR_PINS[]         {14, 15, 16}; //AOut Pin des Sensors
 
 byte SENSOR_EN_PINS[]      {5 }; //VCC Pin des Sensors
 byte SENSOR_PINS[]         {14}; //AOut Pin des Sensors
@@ -173,19 +173,18 @@ class WeatherChannel : public Channel<Hal, UList1, EmptyList, List4, PEERS_PER_C
     void irq () {
       sysclock.cancel(*this);
       processMessage();
-      sysclock.add(*this);
     }
 
     virtual void trigger (__attribute__ ((unused)) AlarmClock& clock) {
       processMessage();
-      tick = delay();
-      sysclock.add(*this);
     }
 
     void processMessage() {
       measure();
+      tick = delay();
       msg.init(device().nextcount(), number(), humidity, device().battery().low());
       device().sendPeerEvent(msg, *this);
+      sysclock.add(*this);
     }
 
     uint32_t delay () {
@@ -247,9 +246,9 @@ void setup () {
     printDeviceInfo();
     sdev.init(hal);
     buttonISR(cfgBtn, CONFIG_BUTTON_PIN);
-    #ifdef ISR_PIN
-      sendISR(ISR_PIN);
-    #endif
+#ifdef ISR_PIN
+    sendISR(ISR_PIN);
+#endif
     sdev.initDone();
   }
 }
