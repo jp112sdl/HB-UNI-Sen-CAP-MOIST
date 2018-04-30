@@ -21,7 +21,9 @@
 // Arduino Pro mini 8 Mhz
 // Arduino pin for the config button
 #define CONFIG_BUTTON_PIN 8
-//#define ISR_PIN           9
+
+// Arduino pin to trigger transmission manual 
+// #define ISR_PIN           9
 
 // number of available peers per channel
 #define PEERS_PER_CHANNEL 6
@@ -201,11 +203,9 @@ class WeatherChannel : public Channel<Hal, UList1, EmptyList, List4, PEERS_PER_C
     }
 
     void setup(Device<Hal, UList0>* dev, uint8_t number, uint16_t addr) {
-      for (int i = 0; i < sizeof(SENSOR_PINS); i++) {
-        pinMode(SENSOR_PINS[i], INPUT);
-        pinMode(SENSOR_EN_PINS[i], OUTPUT);
-      }
       Channel::setup(dev, number, addr);
+      pinMode(SENSOR_PINS[ number - 1 ], INPUT);
+      pinMode(SENSOR_EN_PINS[ number - 1 ], OUTPUT);
       sysclock.add(*this);
     }
 
