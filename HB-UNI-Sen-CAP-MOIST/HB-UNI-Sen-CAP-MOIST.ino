@@ -21,9 +21,7 @@
 // Arduino Pro mini 8 Mhz
 // Arduino pin for the config button
 #define CONFIG_BUTTON_PIN 8
-
-// Arduino pin to trigger transmission manual 
-// #define ISR_PIN           9
+#define ISR_PIN           9
 
 // number of available peers per channel
 #define PEERS_PER_CHANNEL 6
@@ -243,6 +241,7 @@ void setup () {
   if (sizeof(SENSOR_PINS) != sizeof(SENSOR_EN_PINS)) {
     DPRINTLN(F("!!! ERROR: Anzahl SENSOR_PINS entspricht nicht der Anzahl SENSOR_EN_PINS"));
   } else {
+
     printDeviceInfo();
     sdev.init(hal);
     buttonISR(cfgBtn, CONFIG_BUTTON_PIN);
@@ -258,7 +257,6 @@ void loop() {
   bool poll = sdev.pollRadio();
 
   if ( worked == false && poll == false ) {
-
     if (isrDetected) {
       DPRINTLN(F("manual button pressed"));
       for (int i = 1; i <= sizeof(SENSOR_PINS); i++) {
