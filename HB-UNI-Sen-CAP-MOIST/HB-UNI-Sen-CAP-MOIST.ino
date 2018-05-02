@@ -164,8 +164,8 @@ class WeatherChannel : public Channel<Hal, UList1, EmptyList, List4, PEERS_PER_C
       digitalWrite(SENSOR_EN_PINS[(number() - 1)], LOW);
       DPRINT(F("+Sensor    (#")); DDEC(number()); DPRINT(F(") V: ")); DDECLN(sens_val);
       uint16_t range = this->getList1().HIGHValue() - this->getList1().LOWValue();
-      uint16_t base = sens_val - this->getList1().LOWValue();
-      uint8_t pct_inv = ((100 * base) / range);
+      uint32_t base = sens_val - this->getList1().LOWValue();
+      uint8_t pct_inv = (100 * base) / range;
       humidity = (pct_inv > 100) ? 0 : 100 - pct_inv;
       DPRINT(F("+Humidity  (#")); DDEC(number()); DPRINT(F(") %: ")); DDECLN(humidity);
     }
