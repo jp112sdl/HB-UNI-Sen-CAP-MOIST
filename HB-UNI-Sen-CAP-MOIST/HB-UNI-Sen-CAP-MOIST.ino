@@ -224,12 +224,12 @@ class UType : public MultiChannelDevice<Hal, WeatherChannel, sizeof(SENSOR_PINS)
 
     virtual void configChanged () {
       TSDevice::configChanged();
-      DPRINT("*LOW BAT Limit: ");
+      DPRINT(F("*LOW BAT Limit: "));
       DDECLN(this->getList0().lowBatLimit());
-      DPRINT("*Wake-On-Radio: ");
+      DPRINT(F("*Wake-On-Radio: "));
       DDECLN(this->getList0().burstRx());
       this->battery().low(this->getList0().lowBatLimit());
-      DPRINT("*Sendeintervall: "); DDECLN(this->getList0().Sendeintervall());
+      DPRINT(F("*Sendeintervall: ")); DDECLN(this->getList0().Sendeintervall());
     }
 };
 
