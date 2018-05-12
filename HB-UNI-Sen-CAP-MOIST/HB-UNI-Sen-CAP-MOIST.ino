@@ -33,8 +33,8 @@ using namespace as;
 #define SYSCLOCK_FACTOR    0.88
 
 #define LED_PIN            4
-#define BATT_EN_PIN        3
-#define BATT_SENS_PIN      A6
+#define BATT_EN_PIN        6
+#define BATT_SENS_PIN      A3
 
 volatile bool isrDetected = false;
 
