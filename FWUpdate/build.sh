@@ -47,12 +47,14 @@ echo ""
 
 if [ "${COMPILE}" ]; then
 	BUILD_PATH=/var/folders/q_/pltbkm613qzdp54tz13stm5h0000gp/T/arduino_build_444073
+        BUILD_CACHE=/var/folders/q_/pltbkm613qzdp54tz13stm5h0000gp/T/arduino_cache_309895
 	CURRENT_DIR=`pwd`
 	cd ../${SKETCH}
 	echo "Enabling #define USE_OTA_BOOTLOADER in Sketch..."
 	sed -i "s/\/\/ #define USE_OTA_BOOTLOADER/#define USE_OTA_BOOTLOADER/g" ${SKETCH}.ino
 
-	mkdir -p /var/folders/q_/pltbkm613qzdp54tz13stm5h0000gp/T/arduino_build_444073
+	mkdir -p ${BUILD_PATH}
+	mkdir -p ${BUILD_CACHE}
 
 	echo "Compiling Sketch..."
 	/Applications/Arduino-1.8.5.app/Contents/Java/arduino-builder \
@@ -68,7 +70,7 @@ if [ "${COMPILE}" ]; then
 	-ide-version=10805 \
 	-build-path $BUILD_PATH \
 	-warnings=none \
-	-build-cache /var/folders/q_/pltbkm613qzdp54tz13stm5h0000gp/T/arduino_cache_309895 \
+	-build-cache ${BUILD_CACHE} \
 	-prefs=build.warn_data_percentage=75 \
 	-prefs=runtime.tools.avr-gcc.path=/Users/${USER}/Library/Arduino15/packages/arduino/tools/avr-gcc/4.9.2-atmel3.5.4-arduino2 \
 	-prefs=runtime.tools.avrdude.path=~/Library/Arduino15/packages/arduino/tools/avrdude/6.3.0-arduino9 \
