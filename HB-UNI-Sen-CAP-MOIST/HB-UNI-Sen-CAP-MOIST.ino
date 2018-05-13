@@ -61,7 +61,7 @@ const struct DeviceInfo PROGMEM devinfo = {
   {0xF3, 0x11, 0x03},          // Device ID
   "JPCAPM0003",                // Device Serial
   {0xF3, 0x11},                // Device Model
-  0x10,                        // Firmware Version
+  0x11,                        // Firmware Version
   as::DeviceType::THSensor,    // Device Type
   {0x01, 0x01}                 // Info Bytes
 };
@@ -135,18 +135,19 @@ class UList1 : public RegList1<UReg1> {
 
 class WeatherEventMsg : public Message {
   public:
-    void init(uint8_t msgcnt, uint8_t channel, uint8_t val, bool batlow) {
+    void init(uint8_t msgcnt, uint8_t channel, uint8_t val, bool batlow, uint8_t volt) {
 
-      Message::init(0x0d, msgcnt, 0x70, BCAST , batlow ? 0x80 : 0x00, 0x00);
-      pload[0] = val;
-      pload[1] = channel;
+      Message::init(0x0e, msgcnt, 0x70, BCAST , batlow ? 0x80 : 0x00, 0x00);
+      pload[0] = val     & 0xff;
+      pload[1] = channel & 0xff;
+      pload[2] = volt    & 0xff;
     }
 };
 
 class WeatherChannel : public Channel<Hal, UList1, EmptyList, List4, PEERS_PER_CHANNEL, UList0>, public Alarm {
     WeatherEventMsg msg;
-    uint16_t      millis;
-    uint8_t       humidity;
+    uint16_t        millis;
+    uint8_t         humidity;
 
   public:
     WeatherChannel () : Channel(), Alarm(0), millis(0) {}
@@ -182,7 +183,8 @@ class WeatherChannel : public Channel<Hal, UList1, EmptyList, List4, PEERS_PER_C
     void processMessage() {
       measure();
       tick = delay();
-      msg.init(device().nextcount(), number(), humidity, device().battery().low());
+      DPRINT(F("+Battery   (#")); DDEC(number()); DPRINT(F(") V: ")); DDECLN(device().battery().current());
+      msg.init(device().nextcount(), number(), humidity, device().battery().low(), device().battery().current());
       device().sendPeerEvent(msg, *this);
       sysclock.add(*this);
     }
