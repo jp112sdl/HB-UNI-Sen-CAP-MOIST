@@ -117,4 +117,3 @@ Eine Verwendung in Programmen ist ebenfalls möglich.
 ![aufbau1](Images/aufbau1.jpg)
 
 ![aufbau2](Images/aufbau2.jpg)
-
