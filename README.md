@@ -52,15 +52,7 @@ einstellen
 - Menü "Sketch" -> "Hochladen" auswählen.
 
 ## Addon installieren
-In der CCU2 (oder RaspberryMatic) muss vor dem Anlernen noch ein Addon installiert werden.<br>
-Dieses kann [hier](https://github.com/jp112sdl/HB-UNI-Sen-CAP-MOIST/raw/master/Addon/HB-UNI-Sen-CAP-MOIST-addon.tgz) heruntergeladen werden.<br>
-_Hinweis: Die Datei darf nicht entpackt werden!_<br>
-Über "Einstellungen"->"Systemsteuerung"->"Zusatzsoftware" wählt man die Datei aus und klickt auf "Installieren".
-Die CCU2 startet automatisch neu.<br>
-**Achtung: Nachdem das System wieder hochgefahren ist, muss noch einmal ein Neustart erfolgen!**<br>
-**"Einstellungen"->"Systemsteuerung"->"Zentralenwartung", Button "Neustart"**<br>
-Nun ist das Addon einsatzbereit.<br>
-![addon](Images/ccu_addon.png)
+Um die Geräteunterstützung zu aktivieren, wird die aktuellste Version des [JP-HB-Devices Addon](https://github.com/jp112sdl/JP-HB-Devices-addon/releases/latest) benötigt!
 
 ## Gerät anlernen
 Wenn alles korrekt verkabelt und das Addons installiert ist, kann das Gerät angelernt werden.<br>
