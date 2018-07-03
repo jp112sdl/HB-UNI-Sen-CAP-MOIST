@@ -1,5 +1,10 @@
 # HB-UNI-Sen-CAP-MOIST
 ## Funk "kapazitiver Bodenfeuchtesensor" für die Integration in HomeMatic
+
+_aktueller Hinweis:<br>
+Das eigenständige Addon für den Sensor ist entfallen.
+Um die Geräteunterstützung zu aktivieren, wird nun die aktuellste Version des [JP-HB-Devices Addon](https://github.com/jp112sdl/JP-HB-Devices-addon/releases/latest) benötigt! Mit diesem [Addon](https://github.com/jp112sdl/HB-UNI-Sen-CAP-MOIST#addon-installieren) werden alle meine Projekte unterstützt._
+
 #### (mit bis zu 7 Sensoren pro Gerät)
 
 ## Verdrahtung 1 - mit StepUp
