@@ -20,16 +20,11 @@ Um die Geräteunterstützung zu aktivieren, wird nun die aktuellste Version des 
 * 1x Widerstand 100k (R2)
 * 1x Widerstand 470k (R3)
 * 1x ... 7x kapazitiver Feuchtesensor (0...3V Ausgangsspannung) [ebay](https://www.ebay.de/itm/152873639264)
-* optional: 1x StepUp-Wandler **3.3V** (BL8530 o.ä.) [ebay](https://www.ebay.de/itm/382058974507)
 * Draht, um die Komponenten zu verbinden
 
 Um die Batterielebensdauer zu erhöhen, ist es unbedingt notwendig, die grüne LED vom Arduino Pro Mini mit einem kleinen Schraubendreher oder Messer von der Platine zu entfernen!
 
-Die Schaltung mit StepUp-Converter ist wesentlich kompakter, da sie mit weniger Batterien auskommt.<br>
-Wer aber möglichst wenig bauen/verdrahten möchte, ist auch mit der Variante 2 gut bedient.<br>
-Es sind dann jedoch 3x AA(A)-Batterien (oder 4x 1.2V Akkus) notwendig.<br>
-Der LDO auf dem Pro Mini kann lt. Datenblatt **max. 5.5V Eingangsspannung** vertragen.<br>
-Mit 6V (4x AA Batterien) lief er im Feldversuch auch, was ich jedoch nicht empfehle. Vorzugsweise sind 3x AA Batterien (4.5V) zu verwenden oder 4x AA 1.2V-Akkus (4.8V).
+Die Stromversorgung besteht aus **3x** AA(A)-**Batterien** (oder **4x 1.2V Akkus**).<br>
 
 ## Universalplatine
 Wer eine eigene Platine herstellen möchte, kann auf eine Auswahl verschiedener vorgefertigter Layouts zurückgreifen.
