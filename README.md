@@ -7,12 +7,7 @@ Um die Geräteunterstützung zu aktivieren, wird nun die aktuellste Version des 
 
 #### (mit bis zu 7 Sensoren pro Gerät)
 
-## Verdrahtung 1 - mit StepUp
-
-![wiring](Images/wiring.png)
-
-## Verdrahtung 2 - ohne StepUp
-
+## Verdrahtung
 ![wiring](Images/wiring2.png)
 
 ## benötigte Hardware
@@ -88,8 +83,7 @@ Beide Werte können nun in der WebUI-Gerätekonfiguration eingegeben werden.
 ## Einstellungen
 - Gerät:
   - Low Bat Schwelle
-    - mit StepUp: ~2.2V
-    - ohne StepUp: ~3.7V
+    - ~3.7V
   - Das Sendeintervall kann zwischen 1 und 1440 Minuten eingestellt werden.<br>
 - je Kanal:
   - HIGH Value ist der gemessene Analogwert, wenn der Sensor trocken ist.<br>
@@ -110,7 +104,9 @@ Eine Verwendung in Programmen ist ebenfalls möglich.
 
 
 ## Beispielaufbau
-#### (einen Deckel drucke ich noch)
+
 ![aufbau1](Images/aufbau1.jpg)
 
 ![aufbau2](Images/aufbau2.jpg)
+
+![aufbau3](Images/aufbau3.jpg)
