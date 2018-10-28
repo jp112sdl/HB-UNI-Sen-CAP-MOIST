@@ -238,6 +238,20 @@ class UType : public MultiChannelDevice<Hal, WeatherChannel, sizeof(SENSOR_PINS)
 UType sdev(devinfo, 0x20);
 ConfigButton<UType> cfgBtn(sdev);
 
+void printDeviceInfo() {
+  HMID ids;
+  sdev.getDeviceID(ids);
+
+  uint8_t ser[10];
+  sdev.getDeviceSerial(ser);
+
+  DPRINT(F("Device Info: "));
+  for (int i = 0; i < 10; i++) {
+    DPRINT(char(ser[i]));
+  }
+  DPRINT(" ("); DHEX(ids); DPRINTLN(")");
+}
+
 void setup () {
   DINIT(57600, ASKSIN_PLUS_PLUS_IDENTIFIER);
   if (sizeof(SENSOR_PINS) != sizeof(SENSOR_EN_PINS)) {
@@ -273,19 +287,3 @@ void loop() {
     hal.activity.savePower<Sleep<>>(hal);
   }
 }
-
-void printDeviceInfo() {
-  HMID ids;
-  sdev.getDeviceID(ids);
-
-  uint8_t ser[10];
-  sdev.getDeviceSerial(ser);
-
-  DPRINT(F("Device Info: "));
-  for (int i = 0; i < 10; i++) {
-    DPRINT(char(ser[i]));
-  }
-  DPRINT(" ("); DHEX(ids); DPRINTLN(")");
-}
-
-
