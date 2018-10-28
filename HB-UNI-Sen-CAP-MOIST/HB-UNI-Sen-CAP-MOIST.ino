@@ -261,7 +261,7 @@ void loop() {
   if ( worked == false && poll == false ) {
     if (isrDetected) {
       DPRINTLN(F("manual button pressed"));
-      for (int i = 1; i <= sizeof(SENSOR_PINS); i++) {
+      for (uint8_t i = 1; i <= sizeof(SENSOR_PINS); i++) {
         sdev.channel(i).irq();
       }
       isrDetected = false;
