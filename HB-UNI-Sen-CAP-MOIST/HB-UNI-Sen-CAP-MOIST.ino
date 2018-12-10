@@ -72,7 +72,7 @@ const struct DeviceInfo PROGMEM devinfo = {
 typedef AvrSPI<10, 11, 12, 13> SPIType;
 typedef Radio<SPIType, 2> RadioType;
 typedef StatusLed<LED_PIN> LedType;
-typedef AskSin<LedType, BatterySensorUni<BATT_SENS_PIN, BATT_EN_PIN>, RadioType> BaseHal;
+typedef AskSin<LedType, BatterySensorUni<BATT_SENS_PIN, BATT_EN_PIN, 0>, RadioType> BaseHal;
 class Hal : public BaseHal {
   public:
     void init (const HMID& id) {
