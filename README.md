@@ -1,5 +1,5 @@
 # HB-UNI-Sen-CAP-MOIST
-## Funk "kapazitiver Bodenfeuchtesensor" _mit optionalem Temperatursensor DS18B20_ für die Integration in HomeMatic
+## Funk "kapazitiver Bodenfeuchtesensor" mit _optionalem_ Temperatursensor DS18B20 für die Integration in HomeMatic
 #### (mit bis zu 7* Sensoren pro Gerät)
 _*6 bei zusätzlicher Verwendung des Temperatursensors_
 
