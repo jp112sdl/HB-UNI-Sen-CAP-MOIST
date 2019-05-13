@@ -19,20 +19,19 @@
 
 // Arduino Pro mini 8 Mhz
 // Arduino pin for the config button
-#define CONFIG_BUTTON_PIN   8
-#define LED_PIN             4
-#define BATT_EN_PIN         5
-#define BATT_SENS_PIN       14  // A0
+#define CONFIG_BUTTON_PIN      8
+#define LED_PIN                4
+#define BATT_EN_PIN            5
+#define BATT_SENS_PIN          14  // A0
 
-#define CC1101_GDO0_PIN     2
-#define CC1101_CS_PIN       10
-#define CC1101_MOSI_PIN     11
-#define CC1101_MISO_PIN     12
-#define CC1101_SCK_PIN      13
-const uint8_t SENSOR_PINS[] {15, 16, 17}; //AOut Pin der Sensoren
-#define SENSOR_EN_PIN1      5
+#define CC1101_GDO0_PIN        2
+#define CC1101_CS_PIN          10
+#define CC1101_MOSI_PIN        11
+#define CC1101_MISO_PIN        12
+#define CC1101_SCK_PIN         13
+const uint8_t SENSOR_PINS[]    {15, 16, 17}; //AOut Pin der Sensoren
 //bei Verwendung von > 3 Sensoren sollten die Vcc der Sensoren auf 2 Enable Pins verteilt werden (max. Last pro AVR-Pin beachten!)
-//#define SENSOR_EN_PIN2     7
+const uint8_t SENSOR_EN_PINS[] {5};
 
 #define DS18B20_PIN         3
 
@@ -236,11 +235,10 @@ public:
 
          void measure() {
            //enable all moisture sensors
-             digitalWrite(SENSOR_EN_PIN1, HIGH);
-#ifdef SENSOR_EN_PIN2
-             _delay_ms(10);
-             digitalWrite(SENSOR_EN_PIN2, HIGH);
-#endif
+           for (uint8_t s = 0; s < sizeof(SENSOR_EN_PINS); s++) {
+             digitalWrite(SENSOR_EN_PINS[s], HIGH);
+             _delay_ms(5);
+           }
 
            //wait a moment to settle
            _delay_ms(500);
@@ -265,10 +263,8 @@ public:
 
            }
            //disable all moisture sensors
-           digitalWrite(SENSOR_EN_PIN1, LOW);
-#ifdef SENSOR_EN_PIN2
-           digitalWrite(SENSOR_EN_PIN2, LOW);
-#endif
+           for (uint8_t s = 0; s < sizeof(SENSOR_EN_PINS); s++)
+             digitalWrite(SENSOR_EN_PINS[s], LOW);
 
 #ifndef NO_DS18B20
            Ds18b20::measure(dev.sensor, 1);
@@ -302,13 +298,11 @@ public:
 
     void init (Hal& hal) {
       TSDevice::init(hal);
-      for (uint8_t s = 0; s < DEVICE_CHANNEL_COUNT; s++) {
+      for (uint8_t s = 0; s < DEVICE_CHANNEL_COUNT; s++)
         pinMode(SENSOR_PINS[ s ], INPUT);
-      }
-      pinMode(SENSOR_EN_PIN1, OUTPUT);
-#ifdef SENSOR_EN_PIN2
-      pinMode(SENSOR_EN_PIN2, OUTPUT);
-#endif
+
+      for (uint8_t s = 0; s < sizeof(SENSOR_EN_PINS); s++)
+      pinMode(SENSOR_EN_PINS[s], OUTPUT);
 
 #ifndef NO_DS18B20
       uint8_t sensorcount = Ds18b20::init(oneWire, sensor, 1);
