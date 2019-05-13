@@ -247,11 +247,14 @@ public:
            //now measure all sensors
            for (uint8_t s = 0; s < DEVICE_CHANNEL_COUNT; s++) {
              uint16_t sens_val = 0;
-             for (uint8_t i = 0; i < 10; i++) {
+
+             //measure 8 times and calculate average
+             for (uint8_t i = 0; i < 8; i++) {
                sens_val += analogRead(SENSOR_PINS[s]);
                _delay_ms(10);
              }
-             sens_val = sens_val / 10;
+             sens_val /= 8;
+
              DPRINT(F("+AnalogIn  : ")); DDECLN(sens_val);
              uint16_t range = dev.channel(s + 2).getList1().HIGHValue() - dev.channel(s + 2).getList1().LOWValue();
              uint32_t base = sens_val - dev.channel(s + 2).getList1().LOWValue();
