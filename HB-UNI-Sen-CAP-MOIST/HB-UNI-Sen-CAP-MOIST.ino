@@ -306,7 +306,7 @@ public:
 
 #ifndef NO_DS18B20
       uint8_t sensorcount = Ds18b20::init(oneWire, sensor, 1);
-      DPRINT("Found "); DDEC(sensorcount); DPRINTLN(" DS18B20 Sensor");
+      DPRINT(F("DS18B20 Sensor "));DPRINTLN((sensorcount > 0) ? F("OK"):F("ERROR"));
 #endif
       sensarray.set(seconds2ticks(5));
       sysclock.add(sensarray);
