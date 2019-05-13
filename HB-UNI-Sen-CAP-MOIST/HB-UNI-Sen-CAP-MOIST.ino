@@ -29,11 +29,11 @@
 #define CC1101_MOSI_PIN        11
 #define CC1101_MISO_PIN        12
 #define CC1101_SCK_PIN         13
-const uint8_t SENSOR_PINS[]    {15, 16, 17}; //AOut Pin der Sensoren
+const uint8_t SENSOR_PINS[]    {15, 16, 17}; //AOut Pins der Sensoren (hier A1, A2 und A3)
 //bei Verwendung von > 3 Sensoren sollten die Vcc der Sensoren auf 2 Enable Pins verteilt werden (max. Last pro AVR-Pin beachten!)
-const uint8_t SENSOR_EN_PINS[] {5};
+const uint8_t SENSOR_EN_PINS[] {6};
 
-#define DS18B20_PIN         3
+#define DS18B20_PIN            3
 
 
 #define DEVICE_CHANNEL_COUNT sizeof(SENSOR_PINS)
@@ -169,9 +169,9 @@ class WeatherEventMsg : public Message {
 
 #ifndef NO_DS18B20
     int16_t t = temperature + offset;
-    DPRINT(F("+Temp      : ")); DDECLN(t);
+    DPRINT(F("+Temp         C : ")); DDECLN(t);
 #endif
-    DPRINT(F("+Battery  V: ")); DDECLN(volt);
+    DPRINT(F("+Battery      V : ")); DDECLN(volt);
 #ifdef NO_DS18B20
 #define PAYLOAD_OFFSET 0
 #else
@@ -187,7 +187,7 @@ class WeatherEventMsg : public Message {
 
     pload[PAYLOAD_OFFSET] = (volt)   & 0xff;
     for (uint8_t s = 0; s < DEVICE_CHANNEL_COUNT; s++) {
-      DPRINT(F("+Humidity %: ")); DDECLN(h[s]);
+      DPRINT(F("+Humidity (#")); DDEC(s + 1); DPRINT(F(") %: ")); DDECLN(h[s]);
       pload[1+PAYLOAD_OFFSET+(s * 2)] = 0x42 + s;
       pload[2+PAYLOAD_OFFSET+(s * 2)] = h[s] & 0xff;
     }
@@ -203,12 +203,12 @@ class WeatherChannel : public Channel<Hal, UList1, EmptyList, List4, PEERS_PER_C
     virtual ~WeatherChannel () {}
 
     void configChanged() {
-      DPRINTLN(F("Config changed List1"));
+      DPRINT(F("Config changed List1 (CH "));DDEC(number());DPRINTLN(F(")"));
 #ifndef NO_DS18B20
       if (number() == 1) { DPRINT(F("*Offset    : ")); DDECLN(this->getList1().Offset()); }
 #endif
-      if (number() > 1) { DPRINT(F("*HIGHValue : ")); DDECLN(this->getList1().HIGHValue()); }
-      if (number() > 1) { DPRINT(F("*LOWValue  : ")); DDECLN(this->getList1().LOWValue()); }
+      if (number() > 1)  { DPRINT(F("*HIGHValue : ")); DDECLN(this->getList1().HIGHValue()); }
+      if (number() > 1)  { DPRINT(F("*LOWValue  : ")); DDECLN(this->getList1().LOWValue()); }
     }
 
     uint8_t status () const {
@@ -253,7 +253,7 @@ public:
              }
              sens_val /= 8;
 
-             DPRINT(F("+AnalogIn  : ")); DDECLN(sens_val);
+             DPRINT(F("+Analog     (#")); DDEC(s + 1); DPRINT(F("): ")); DDECLN(sens_val);
              uint16_t range = dev.channel(s + 2).getList1().HIGHValue() - dev.channel(s + 2).getList1().LOWValue();
              uint32_t base = sens_val - dev.channel(s + 2).getList1().LOWValue();
              uint8_t pct_inv = (100 * base) / range;
@@ -285,6 +285,7 @@ public:
          }
 
          uint32_t delay () {
+           //Sendeintervall festlegen
            uint16_t _txDelay = max(dev.getList0().Sendeintervall(), 1);
            return seconds2ticks(_txDelay * 60 * SYSCLOCK_FACTOR);
          }
