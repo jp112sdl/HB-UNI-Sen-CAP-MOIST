@@ -16,15 +16,6 @@
 #define EI_NOTEXTERNAL
 #include <EnableInterrupt.h>
 #define SENSOR_ONLY
-#include <AskSinPP.h>
-#include <LowPower.h>
-
-#include <Register.h>
-#include <MultiChannelDevice.h>
-#ifndef NO_DS18B20
-#include <OneWire.h>
-#include <sensors/Ds18b20.h>
-#endif
 
 // Arduino Pro mini 8 Mhz
 // Arduino pin for the config button
@@ -38,18 +29,26 @@
 #define CC1101_MOSI_PIN     11
 #define CC1101_MISO_PIN     12
 #define CC1101_SCK_PIN      13
-#ifndef NO_DS18B20
-#define DS18B20_PIN         3
-OneWire oneWire(DS18B20_PIN);
-#endif
-
+const uint8_t SENSOR_PINS[] {15, 16, 17}; //AOut Pin der Sensoren
 #define SENSOR_EN_PIN1      5
 //bei Verwendung von > 3 Sensoren sollten die Vcc der Sensoren auf 2 Enable Pins verteilt werden (max. Last pro AVR-Pin beachten!)
 //#define SENSOR_EN_PIN2     7
 
-const uint8_t SENSOR_PINS[]   {15, 16, 17, 18, 19, 20}; //AOut Pin der Sensoren
+#define DS18B20_PIN         3
+
 
 #define DEVICE_CHANNEL_COUNT sizeof(SENSOR_PINS)
+#include <AskSinPP.h>
+#include <LowPower.h>
+
+#include <Register.h>
+#include <MultiChannelDevice.h>
+
+#ifndef NO_DS18B20
+#include <OneWire.h>
+#include <sensors/Ds18b20.h>
+OneWire oneWire(DS18B20_PIN);
+#endif
 
 // number of available peers per channel
 #define PEERS_PER_CHANNEL 4
@@ -228,7 +227,7 @@ public:
   Ds18b20      sensor[1];
 #endif
   class SensorArray : public Alarm {
-         UType& dev;
+       UType& dev;
 
        public:
          uint8_t       humidity[DEVICE_CHANNEL_COUNT];
@@ -254,13 +253,12 @@ public:
              }
              sens_val = sens_val / 10;
              DPRINT(F("+AnalogIn  : ")); DDECLN(sens_val);
-             uint16_t range = dev.channel(s+2).getList1().HIGHValue() - dev.channel(s + 2).getList1().LOWValue();
+             uint16_t range = dev.channel(s + 2).getList1().HIGHValue() - dev.channel(s + 2).getList1().LOWValue();
              uint32_t base = sens_val - dev.channel(s + 2).getList1().LOWValue();
              uint8_t pct_inv = (100 * base) / range;
              humidity[s] = (pct_inv > 100) ? 0 : 100 - pct_inv;
 
-             humidity[s] = random(0,100);
-             DPRINT("humidity ");DDEC(s);DPRINT(" = ");DDECLN(humidity[s]);
+             //humidity[s] = random(0,100);
 
            }
            //disable all moisture sensors
@@ -288,10 +286,8 @@ public:
          }
 
          uint32_t delay () {
-           uint16_t _txMindelay = 30;
-           _txMindelay = dev.getList0().Sendeintervall();
-           if (_txMindelay == 0) _txMindelay = 30;
-           return seconds2ticks(_txMindelay * 60 * SYSCLOCK_FACTOR);
+           uint16_t _txDelay = max(dev.getList0().Sendeintervall(), 1);
+           return seconds2ticks(_txDelay * 60 * SYSCLOCK_FACTOR);
          }
 
       } sensarray;
