@@ -1,11 +1,9 @@
 # HB-UNI-Sen-CAP-MOIST
-## Funk "kapazitiver Bodenfeuchtesensor" für die Integration in HomeMatic
+## Funk "kapazitiver Bodenfeuchtesensor" _mit optionalem Temperatursensor DS18B20_ für die Integration in HomeMatic
+#### (mit bis zu 7* Sensoren pro Gerät)
+_*6 bei zusätzlicher Verwendung des Temperatursensors_
 
-_aktueller Hinweis:<br>
-Das eigenständige Addon für den Sensor ist entfallen.
-Um die Geräteunterstützung zu aktivieren, wird nun die aktuellste Version des [JP-HB-Devices Addon](https://github.com/jp112sdl/JP-HB-Devices-addon/releases/latest) benötigt! Mit diesem [Addon](https://github.com/jp112sdl/HB-UNI-Sen-CAP-MOIST#addon-installieren) werden alle meine Projekte unterstützt._
-
-#### (mit bis zu 7 Sensoren pro Gerät)
+Um die Geräteunterstützung zu aktivieren, wird die aktuellste Version des [JP-HB-Devices Addon](https://github.com/jp112sdl/JP-HB-Devices-addon/releases/latest) (mind. Version 2.7) benötigt! 
 
 ## Verdrahtung
 ![wiring](Images/wiring2.png)
@@ -19,21 +17,20 @@ Um die Geräteunterstützung zu aktivieren, wird nun die aktuellste Version des 
 * 1x Widerstand 330 Ohm (R1)
 * 1x Widerstand 100k (R2)
 * 1x Widerstand 470k (R3)
+* 1x (optional) Widerstand 4,7k (R4) _nur bei Verwendung mit DS18B20 Temperatursensor_
+* 1x (optional) DS18B20 Temperatursensor
 * 1x ... 7x kapazitiver Feuchtesensor (0...3V Ausgangsspannung) [ebay](https://www.ebay.de/itm/152873639264)
-* Draht, um die Komponenten zu verbinden
 
-Um die Batterielebensdauer zu erhöhen, ist es unbedingt notwendig, die grüne LED vom Arduino Pro Mini mit einem kleinen Schraubendreher oder Messer von der Platine zu entfernen!
+Um die [Batterielebensdauer zu erhöhen](https://asksinpp.de/Grundlagen/01_hardware.html#stromversorgung), ist es unbedingt notwendig, die LEDs vom Arduino Pro Mini von der Platine zu entfernen!
 
-Die Stromversorgung besteht aus **3x** AA(A)-**Batterien** (oder **4x 1.2V Akkus**).<br>
 
-## Universalplatine
-Wer eine eigene Platine herstellen möchte, kann auf eine Auswahl verschiedener vorgefertigter Layouts zurückgreifen.
-z.B.:
-- [PCB](https://github.com/alexreinert/PCB) von alexreinert
-- [HMSensor](https://github.com/pa-pa/HMSensor) von pa-pa
+Die Stromversorgung besteht bspw. aus **3x** AA(A)-**Batterien** (oder **4x 1.2V Akkus**).<br>
+
+## Platine
+*TODO*
 
 ## Code flashen
-- [AskSinPP Library](https://github.com/pa-pa/AskSinPP) in der Arduino IDE installieren
+- [AskSinPP Library](https://github.com/pa-pa/AskSinPP) in der Arduino IDE installieren (master-Branch ab 13.05.2019 verwenden!)
   - Achtung: Die Lib benötigt selbst auch noch weitere Bibliotheken, siehe [README](https://github.com/pa-pa/AskSinPP#required-additional-arduino-libraries).
 - [Projekt-Datei](https://raw.githubusercontent.com/jp112sdl/HB-UNI-Sen-CAP-MOIST/master/HB-UNI-Sen-CAP-MOIST/HB-UNI-Sen-CAP-MOIST.ino) herunterladen.
 - Arduino IDE öffnen
@@ -44,10 +41,12 @@ z.B.:
     - Port: entsprechend FTDI Adapter
 einstellen
 - ggf. Anpassungen im Code durchführen (z.B. bei mehreren Sensoren)
+  - Code-Optionen:
+    - wenn **kein** Temperatursensor angeschlossen werden soll, sind die Kommentarzeichen zu entfernen:<br/>`// #define NO_DS18B20 //use model without temperature sensor`
+    - Pins anpassen:<br/>`const uint8_t SENSOR_PINS[]    {15, 16, 17}; //AOut Pins der Sensoren (hier A1, A2 und A3)`<br/>
+`//bei Verwendung von > 3 Sensoren sollten die Vcc der Sensoren auf 2 Enable Pins verteilt werden (max. Last pro AVR-Pin beachten!)`<br/>`const uint8_t SENSOR_EN_PINS[] {6};`
 - Menü "Sketch" -> "Hochladen" auswählen.
 
-## Addon installieren
-Um die Geräteunterstützung zu aktivieren, wird die aktuellste Version des [JP-HB-Devices Addon](https://github.com/jp112sdl/JP-HB-Devices-addon/releases/latest) benötigt!
 
 ## Gerät anlernen
 Wenn alles korrekt verkabelt und das Addons installiert ist, kann das Gerät angelernt werden.<br>
@@ -63,13 +62,11 @@ Dort auf "Fertig" geklickt, wird es nun in der Geräteübersicht aufgeführt.<br
 Der [Hersteller des Sensors](https://www.dfrobot.com/wiki/index.php/Capacitive_Soil_Moisture_Sensor_SKU:SEN0193) sieht eine manuelle Kalibrierung vor.<br>
 Es müssen die Spannungswerte für beide Feuchte-Grenzen (trocken / nass) ermittelt werden.<br>
 Der Wert wird beim Starten des Arduino Pro Mini im seriellen Monitor (57600 Baud) angezeigt.<br>
-Siehe `+Sensor   (#n) V:` <br>
+Siehe `+Analog   (#n):` <br>
 ![sermon](Images/arduino_ide_serialmonitor.png)
 
 Zur Kalibrierung startet man nun den Arduino Pro Mini ein Mal mit trockenen Sensoren und ein Mal in ein Glas Wasser eingetaucht.
-Dabei ergeben sich je Sensor 2 Werte:<br>
-<img src="Images/sensor_trocken.png" width=300>&nbsp;<img src="Images/sensor_nass.png" width=300>
-<br>
+
 _Der Wert im Trockenen muss höher sein als im Nassen!_
 
 <br><br>
