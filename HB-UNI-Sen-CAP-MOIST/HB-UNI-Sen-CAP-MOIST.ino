@@ -1,7 +1,8 @@
 //- -----------------------------------------------------------------------------------------------------------------------
 // AskSin++
 // 2016-10-31 papa Creative Commons - http://creativecommons.org/licenses/by-nc-sa/3.0/de/
-// 2018-04-16 jp112sdl Creative Commons - http://creativecommons.org/licenses/by-nc-sa/3.0/de/
+// 2019-05-03 jp112sdl Creative Commons - http://creativecommons.org/licenses/by-nc-sa/3.0/de/
+// 2019-05-04 stan23 Creative Commons - http://creativecommons.org/licenses/by-nc-sa/3.0/de/
 //- -----------------------------------------------------------------------------------------------------------------------
 
 //Sensor:
@@ -10,21 +11,48 @@
 // define this to read the device id, serial and device type from bootloader section
 // #define USE_OTA_BOOTLOADER
 
+// #define NO_DS18B20 //use model without temperature sensor
+
 #define EI_NOTEXTERNAL
 #include <EnableInterrupt.h>
+#define SENSOR_ONLY
 #include <AskSinPP.h>
 #include <LowPower.h>
 
 #include <Register.h>
 #include <MultiChannelDevice.h>
+#ifndef NO_DS18B20
+#include <OneWire.h>
+#include <sensors/Ds18b20.h>
+#endif
 
 // Arduino Pro mini 8 Mhz
 // Arduino pin for the config button
-#define CONFIG_BUTTON_PIN 8
-#define ISR_PIN           9
+#define CONFIG_BUTTON_PIN   8
+#define LED_PIN             4
+#define BATT_EN_PIN         5
+#define BATT_SENS_PIN       14  // A0
+
+#define CC1101_GDO0_PIN     2
+#define CC1101_CS_PIN       10
+#define CC1101_MOSI_PIN     11
+#define CC1101_MISO_PIN     12
+#define CC1101_SCK_PIN      13
+#ifndef NO_DS18B20
+#define DS18B20_PIN         3
+OneWire oneWire(DS18B20_PIN);
+#endif
+
+#define SENSOR_EN_PIN1      5
+//bei Verwendung von > 3 Sensoren sollten die Vcc der Sensoren auf 2 Enable Pins verteilt werden (max. Last pro AVR-Pin beachten!)
+//#define SENSOR_EN_PIN2     7
+
+const uint8_t SENSOR_PINS[]   {15, 16, 17, 18, 19, 20}; //AOut Pin der Sensoren
+
+#define DEVICE_CHANNEL_COUNT sizeof(SENSOR_PINS)
 
 // number of available peers per channel
-#define PEERS_PER_CHANNEL 6
+#define PEERS_PER_CHANNEL 4
 
 // all library classes are placed in the namespace 'as'
 using namespace as;
@@ -32,36 +60,18 @@ using namespace as;
 //Korrekturfaktor der Clock-Ungenauigkeit, wenn keine RTC verwendet wird
 #define SYSCLOCK_FACTOR    0.88
 
-#define LED_PIN            4
-#define BATT_EN_PIN        6
-#define BATT_SENS_PIN      A3
-
-volatile bool isrDetected = false;
-
-//SENSOR_EN_PIN und SENSOR_PIN sind immer paarweise und kommagetrennt hinzuzufügen:
-//Beispiel für 3 Sensoren
-//byte SENSOR_EN_PINS[]      {5 , 6, 7}; //VCC Pin des Sensors
-//byte SENSOR_PINS[]         {14, 15, 16}; //AOut Pin des Sensors
-
-byte SENSOR_EN_PINS[]      {5 }; //VCC Pin des Sensors
-byte SENSOR_PINS[]         {14}; //AOut Pin des Sensors
-
-#define sendISR(pin) class sendISRHandler { \
-    public: \
-      static void isr () { isrDetected = true; } \
-  }; \
-  pinMode(pin, INPUT_PULLUP); \
-  if( digitalPinToInterrupt(pin) == NOT_AN_INTERRUPT ) \
-    enableInterrupt(pin,sendISRHandler::isr,RISING); \
-  else \
-    attachInterrupt(digitalPinToInterrupt(pin),sendISRHandler::isr,RISING);
+#ifdef NO_DS18B20
+#define DEVICE_MODEL  0x11
+#else
+#define DEVICE_MODEL  0x12
+#endif
 
 // define all device properties
 const struct DeviceInfo PROGMEM devinfo = {
-  {0xF3, 0x11, 0x03},          // Device ID
-  "JPCAPM0003",                // Device Serial
-  {0xF3, 0x11},                // Device Model
-  0x11,                        // Firmware Version
+  {0xF3, DEVICE_MODEL, 0x00},  // Device ID
+  "JPCAPM0000",                // Device Serial
+  {0xF3, DEVICE_MODEL},        // Device Model
+  0x10,                        // Firmware Version
   as::DeviceType::THSensor,    // Device Type
   {0x01, 0x01}                 // Info Bytes
 };
@@ -69,8 +79,8 @@ const struct DeviceInfo PROGMEM devinfo = {
 /**
    Configure the used hardware
 */
-typedef AvrSPI<10, 11, 12, 13> SPIType;
-typedef Radio<SPIType, 2> RadioType;
+typedef AvrSPI<CC1101_CS_PIN, CC1101_MOSI_PIN, CC1101_MISO_PIN, CC1101_SCK_PIN> SPIType;
+typedef Radio<SPIType, CC1101_GDO0_PIN> RadioType;
 typedef StatusLed<LED_PIN> LedType;
 typedef AskSin<LedType, BatterySensorUni<BATT_SENS_PIN, BATT_EN_PIN, 0>, RadioType> BaseHal;
 class Hal : public BaseHal {
@@ -88,7 +98,7 @@ class Hal : public BaseHal {
 } hal;
 
 
-DEFREGISTER(UReg0, MASTERID_REGS, DREG_BURSTRX, DREG_LOWBATLIMIT, 0x21, 0x22)
+DEFREGISTER(UReg0, MASTERID_REGS, DREG_LOWBATLIMIT, 0x21, 0x22)
 class UList0 : public RegList0<UReg0> {
   public:
     UList0 (uint16_t addr) : RegList0<UReg0>(addr) {}
@@ -102,13 +112,12 @@ class UList0 : public RegList0<UReg0> {
 
     void defaults () {
       clear();
-      burstRx(false);
       lowBatLimit(22);
       Sendeintervall(30);
     }
 };
 
-DEFREGISTER(UReg1, 0x23, 0x24, 0x25, 0x26)
+DEFREGISTER(UReg1, 0x01, 0x02, 0x03, 0x04, 0x23, 0x24, 0x25, 0x26)
 class UList1 : public RegList1<UReg1> {
   public:
     UList1 (uint16_t addr) : RegList1<UReg1>(addr) {}
@@ -126,87 +135,82 @@ class UList1 : public RegList1<UReg1> {
       return (this->readRegister(0x25, 0) << 8) + this->readRegister(0x26, 0);
     }
 
+#ifndef NO_DS18B20
+    bool Offset (int32_t value) const {
+      return
+          this->writeRegister(0x01, (value >> 24) & 0xff) &&
+          this->writeRegister(0x02, (value >> 16) & 0xff) &&
+          this->writeRegister(0x03, (value >> 8)  & 0xff) &&
+          this->writeRegister(0x04, (value)       & 0xff)
+          ;
+    }
+
+    int32_t Offset () const {
+      return
+          ((int32_t)(this->readRegister(0x01, 0)) << 24) +
+          ((int32_t)(this->readRegister(0x02, 0)) << 16) +
+          ((int32_t)(this->readRegister(0x03, 0)) << 8 ) +
+          ((int32_t)(this->readRegister(0x04, 0))      )
+          ;
+    }
+#endif
+
     void defaults () {
       clear();
       HIGHValue(830);
       LOWValue(420);
+#ifndef NO_DS18B20
+      Offset(0);
+#endif
     }
 };
 
 class WeatherEventMsg : public Message {
   public:
-    void init(uint8_t msgcnt, uint8_t channel, uint8_t val, bool batlow, uint8_t volt) {
+  void init(uint8_t msgcnt, uint8_t *h, bool batlow, uint8_t volt, __attribute__ ((unused))  int16_t temperature, __attribute__ ((unused))  int8_t offset) {
 
-      Message::init(0x0e, msgcnt, 0x70, BCAST , batlow ? 0x80 : 0x00, 0x00);
-      pload[0] = val     & 0xff;
-      pload[1] = channel & 0xff;
-      pload[2] = volt    & 0xff;
+#ifndef NO_DS18B20
+    int16_t t = temperature + offset;
+    DPRINT(F("+Temp      : ")); DDECLN(t);
+#endif
+    DPRINT(F("+Battery  V: ")); DDECLN(volt);
+#ifdef NO_DS18B20
+#define PAYLOAD_OFFSET 0
+#else
+#define PAYLOAD_OFFSET 2
+#endif
+
+    Message::init(0xc + PAYLOAD_OFFSET + (DEVICE_CHANNEL_COUNT * 2), msgcnt, 0x53, (msgcnt % 20 == 1) ? BIDI : BCAST, batlow ? 0x80 : 0x00, 0x41);
+
+#ifndef NO_DS18B20
+    pload[0] = (t >> 8) & 0xff;
+    pload[1] = (t)      & 0xff;
+#endif
+
+    pload[PAYLOAD_OFFSET] = (volt)   & 0xff;
+    for (uint8_t s = 0; s < DEVICE_CHANNEL_COUNT; s++) {
+      DPRINT(F("+Humidity %: ")); DDECLN(h[s]);
+      pload[1+PAYLOAD_OFFSET+(s * 2)] = 0x42 + s;
+      pload[2+PAYLOAD_OFFSET+(s * 2)] = h[s] & 0xff;
     }
+  }
+  void init(uint8_t msgcnt, uint8_t *h, bool batlow, uint8_t volt) {
+    init(msgcnt, h, batlow, volt, 0, 0);
+  }
 };
 
-class WeatherChannel : public Channel<Hal, UList1, EmptyList, List4, PEERS_PER_CHANNEL, UList0>, public Alarm {
-    WeatherEventMsg msg;
-    uint16_t        millis;
-    uint8_t         humidity;
-
+class WeatherChannel : public Channel<Hal, UList1, EmptyList, List4, PEERS_PER_CHANNEL, UList0> {
   public:
-    WeatherChannel () : Channel(), Alarm(0), millis(0) {}
+    WeatherChannel () : Channel() {}
     virtual ~WeatherChannel () {}
-
-    void measure() {
-      digitalWrite(SENSOR_EN_PINS[(number() - 1)], HIGH);
-      _delay_ms(500);
-      uint16_t sens_val = 0;
-      for (uint8_t i = 0; i < 10; i++) {
-        sens_val += analogRead(SENSOR_PINS[(number() - 1)]);
-        _delay_ms(10);
-      }
-      sens_val = sens_val / 10;
-      digitalWrite(SENSOR_EN_PINS[(number() - 1)], LOW);
-      DPRINT(F("+Sensor    (#")); DDEC(number()); DPRINT(F(") V: ")); DDECLN(sens_val);
-      uint16_t range = this->getList1().HIGHValue() - this->getList1().LOWValue();
-      uint32_t base = sens_val - this->getList1().LOWValue();
-      uint8_t pct_inv = (100 * base) / range;
-      humidity = (pct_inv > 100) ? 0 : 100 - pct_inv;
-      DPRINT(F("+Humidity  (#")); DDEC(number()); DPRINT(F(") %: ")); DDECLN(humidity);
-    }
-
-    void irq () {
-      sysclock.cancel(*this);
-      processMessage();
-    }
-
-    virtual void trigger (__attribute__ ((unused)) AlarmClock& clock) {
-      processMessage();
-    }
-
-    void processMessage() {
-      measure();
-      tick = delay();
-      DPRINT(F("+Battery   (#")); DDEC(number()); DPRINT(F(") V: ")); DDECLN(device().battery().current());
-      msg.init(device().nextcount(), number(), humidity, device().battery().low(), device().battery().current());
-      device().sendPeerEvent(msg, *this);
-      sysclock.add(*this);
-    }
-
-    uint32_t delay () {
-      uint16_t _txMindelay = 30;
-      _txMindelay = device().getList0().Sendeintervall();
-      if (_txMindelay == 0) _txMindelay = 30;
-      return seconds2ticks(_txMindelay * 60 * SYSCLOCK_FACTOR);
-    }
 
     void configChanged() {
       DPRINTLN(F("Config changed List1"));
-      DPRINT(F("*HIGHValue (#")); DDEC(number()); DPRINT(F("): ")); DDECLN(this->getList1().HIGHValue());
-      DPRINT(F("*LOWValue  (#")); DDEC(number()); DPRINT(F("): ")); DDECLN(this->getList1().LOWValue());
-    }
-
-    void setup(Device<Hal, UList0>* dev, uint8_t number, uint16_t addr) {
-      Channel::setup(dev, number, addr);
-      pinMode(SENSOR_PINS[ number - 1 ], INPUT);
-      pinMode(SENSOR_EN_PINS[ number - 1 ], OUTPUT);
-      sysclock.add(*this);
+#ifndef NO_DS18B20
+      if (number() == 1) { DPRINT(F("*Offset    : ")); DDECLN(this->getList1().Offset()); }
+#endif
+      if (number() > 1) { DPRINT(F("*HIGHValue : ")); DDECLN(this->getList1().HIGHValue()); }
+      if (number() > 1) { DPRINT(F("*LOWValue  : ")); DDECLN(this->getList1().LOWValue()); }
     }
 
     uint8_t status () const {
@@ -218,20 +222,110 @@ class WeatherChannel : public Channel<Hal, UList1, EmptyList, List4, PEERS_PER_C
     }
 };
 
-class UType : public MultiChannelDevice<Hal, WeatherChannel, sizeof(SENSOR_PINS), UList0> {
-  public:
-    typedef MultiChannelDevice<Hal, WeatherChannel, sizeof(SENSOR_PINS), UList0> TSDevice;
-    UType(const DeviceInfo& info, uint16_t addr) : TSDevice(info, addr) {}
+class UType : public MultiChannelDevice<Hal, WeatherChannel, DEVICE_CHANNEL_COUNT + 1, UList0> {
+public:
+#ifndef NO_DS18B20
+  Ds18b20      sensor[1];
+#endif
+  class SensorArray : public Alarm {
+         UType& dev;
+
+       public:
+         uint8_t       humidity[DEVICE_CHANNEL_COUNT];
+         uint8_t       sensorcount;
+         SensorArray (UType& d) : Alarm(0), dev(d), sensorcount(0) {}
+
+         void measure() {
+           //enable all moisture sensors
+             digitalWrite(SENSOR_EN_PIN1, HIGH);
+#ifdef SENSOR_EN_PIN2
+             _delay_ms(10);
+             digitalWrite(SENSOR_EN_PIN2, HIGH);
+#endif
+
+           //wait a moment to settle
+           _delay_ms(500);
+           //now measure all sensors
+           for (uint8_t s = 0; s < DEVICE_CHANNEL_COUNT; s++) {
+             uint16_t sens_val = 0;
+             for (uint8_t i = 0; i < 10; i++) {
+               sens_val += analogRead(SENSOR_PINS[s]);
+               _delay_ms(10);
+             }
+             sens_val = sens_val / 10;
+             DPRINT(F("+AnalogIn  : ")); DDECLN(sens_val);
+             uint16_t range = dev.channel(s+2).getList1().HIGHValue() - dev.channel(s + 2).getList1().LOWValue();
+             uint32_t base = sens_val - dev.channel(s + 2).getList1().LOWValue();
+             uint8_t pct_inv = (100 * base) / range;
+             humidity[s] = (pct_inv > 100) ? 0 : 100 - pct_inv;
+
+             humidity[s] = random(0,100);
+             DPRINT("humidity ");DDEC(s);DPRINT(" = ");DDECLN(humidity[s]);
+
+           }
+           //disable all moisture sensors
+           digitalWrite(SENSOR_EN_PIN1, LOW);
+#ifdef SENSOR_EN_PIN2
+           digitalWrite(SENSOR_EN_PIN2, LOW);
+#endif
+
+#ifndef NO_DS18B20
+           Ds18b20::measure(dev.sensor, 1);
+#endif
+         }
+
+         virtual void trigger (__attribute__ ((unused)) AlarmClock& clock) {
+           measure();
+           tick = delay();
+           WeatherEventMsg& msg = (WeatherEventMsg&)dev.message();
+#ifndef NO_DS18B20
+           msg.init(dev.nextcount(), humidity, dev.battery().low(), dev.battery().current(), dev.sensor[0].temperature(), dev.channel(1).getList1().Offset());
+#else
+           msg.init(dev.nextcount(), humidity, dev.battery().low(), dev.battery().current());
+#endif
+           dev.send(msg, dev.getMasterID());
+           sysclock.add(*this);
+         }
+
+         uint32_t delay () {
+           uint16_t _txMindelay = 30;
+           _txMindelay = dev.getList0().Sendeintervall();
+           if (_txMindelay == 0) _txMindelay = 30;
+           return seconds2ticks(_txMindelay * 60 * SYSCLOCK_FACTOR);
+         }
+
+      } sensarray;
+
+
+    typedef MultiChannelDevice<Hal, WeatherChannel, DEVICE_CHANNEL_COUNT + 1, UList0> TSDevice;
+    UType(const DeviceInfo& info, uint16_t addr) : TSDevice(info, addr), sensarray(*this) {}
     virtual ~UType () {}
+
+    void init (Hal& hal) {
+      TSDevice::init(hal);
+      for (uint8_t s = 0; s < DEVICE_CHANNEL_COUNT; s++) {
+        pinMode(SENSOR_PINS[ s ], INPUT);
+      }
+      pinMode(SENSOR_EN_PIN1, OUTPUT);
+#ifdef SENSOR_EN_PIN2
+      pinMode(SENSOR_EN_PIN2, OUTPUT);
+#endif
+
+#ifndef NO_DS18B20
+      uint8_t sensorcount = Ds18b20::init(oneWire, sensor, 1);
+      DPRINT("Found "); DDEC(sensorcount); DPRINTLN(" DS18B20 Sensor");
+#endif
+      sensarray.set(seconds2ticks(5));
+      sysclock.add(sensarray);
+    }
 
     virtual void configChanged () {
       TSDevice::configChanged();
       DPRINT(F("*LOW BAT Limit: "));
       DDECLN(this->getList0().lowBatLimit());
-      DPRINT(F("*Wake-On-Radio: "));
-      DDECLN(this->getList0().burstRx());
       this->battery().low(this->getList0().lowBatLimit());
       DPRINT(F("*Sendeintervall: ")); DDECLN(this->getList0().Sendeintervall());
+
     }
 };
 
@@ -240,17 +334,10 @@ ConfigButton<UType> cfgBtn(sdev);
 
 void setup () {
   DINIT(57600, ASKSIN_PLUS_PLUS_IDENTIFIER);
-  if (sizeof(SENSOR_PINS) != sizeof(SENSOR_EN_PINS)) {
-    DPRINTLN(F("!!! ERROR: Anzahl SENSOR_PINS entspricht nicht der Anzahl SENSOR_EN_PINS"));
-  } else {
-    sdev.init(hal);
-    DDEVINFO(sdev);
-    buttonISR(cfgBtn, CONFIG_BUTTON_PIN);
-#ifdef ISR_PIN
-    sendISR(ISR_PIN);
-#endif
-    sdev.initDone();
-  }
+  sdev.init(hal);
+  DDEVINFO(sdev);
+  buttonISR(cfgBtn, CONFIG_BUTTON_PIN);
+  sdev.initDone();
 }
 
 void loop() {
@@ -258,14 +345,6 @@ void loop() {
   bool poll = sdev.pollRadio();
 
   if ( worked == false && poll == false ) {
-    if (isrDetected) {
-      DPRINTLN(F("manual button pressed"));
-      for (uint8_t i = 1; i <= sizeof(SENSOR_PINS); i++) {
-        sdev.channel(i).irq();
-      }
-      isrDetected = false;
-    }
-
     if ( hal.battery.critical() ) {
       hal.activity.sleepForever(hal);
     }
