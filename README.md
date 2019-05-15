@@ -32,7 +32,7 @@ Die Stromversorgung besteht bspw. aus **3x** AA(A)-**Batterien** (oder **4x 1.2V
 ## Code flashen
 - [AskSinPP Library](https://github.com/pa-pa/AskSinPP) in der Arduino IDE installieren (master-Branch ab 13.05.2019 verwenden!)
   - Achtung: Die Lib benötigt selbst auch noch weitere Bibliotheken, siehe [README](https://github.com/pa-pa/AskSinPP#required-additional-arduino-libraries).
-- [Projekt-Datei](https://raw.githubusercontent.com/jp112sdl/HB-UNI-Sen-CAP-MOIST/master/HB-UNI-Sen-CAP-MOIST/HB-UNI-Sen-CAP-MOIST.ino) herunterladen.
+- [Projekt-Datei](https://raw.githubusercontent.com/jp112sdl/HB-UNI-Sen-CAP-MOIST/master/HB-UNI-Sen-CAP-MOIST.ino) herunterladen.
 - Arduino IDE öffnen
   - Heruntergeladene Projekt-Datei öffnen
   - Werkzeuge
