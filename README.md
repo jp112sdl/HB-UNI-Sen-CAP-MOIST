@@ -94,8 +94,12 @@ Damit kann man wohl leben... :)
 
 Eine Verwendung in Programmen ist ebenfalls möglich.
 
+## Gehäuse
+- [Gehäuse von "tonischabloni"](https://www.thingiverse.com/thing:3633804) auf Thingiverse:<br/>
+<img src="https://cdn.thingiverse.com/renders/57/75/70/f8/13/55a71e0061095641271512beb3e84957_preview_featured.jpeg"></img>
+<br/>
 
-## Beispielaufbau
+## Mein Prototyp
 
 ![aufbau1](Images/aufbau1.jpg)
 
