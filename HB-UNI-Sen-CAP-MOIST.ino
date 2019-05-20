@@ -253,11 +253,24 @@ public:
              }
              sens_val /= 8;
 
-             DPRINT(F("+Analog     (#")); DDEC(s + 1); DPRINT(F("): ")); DDECLN(sens_val);
-             uint16_t range = dev.channel(s + 2).getList1().HIGHValue() - dev.channel(s + 2).getList1().LOWValue();
-             uint32_t base = sens_val - dev.channel(s + 2).getList1().LOWValue();
-             uint8_t pct_inv = (100 * base) / range;
-             humidity[s] = (pct_inv > 100) ? 0 : 100 - pct_inv;
+             DPRINT(F("+Analog     (#")); DDEC(s + 1); DPRINT(F("): ")); DDEC(sens_val);
+             uint16_t upper_limit = dev.channel(s + 2).getList1().HIGHValue();
+             uint16_t lower_limit = dev.channel(s + 2).getList1().LOWValue();
+             if (sens_val > upper_limit) {
+               humidity[s] = 0;
+               DPRINTLN(F(" higher than limit!"));
+             }
+             else if (sens_val < lower_limit) {
+               humidity[s] = 100;
+               DPRINTLN(F(" lower than limit!"));
+             }
+             else {
+               uint16_t range = upper_limit - lower_limit;
+               uint16_t base = sens_val - lower_limit;
+               uint8_t pct_inv = (base * 100) / range;
+               humidity[s] = 100 - pct_inv;
+               DPRINTLN("");
+             }
 
              //humidity[s] = random(0,100);
 
@@ -340,6 +353,7 @@ void loop() {
 
   if ( worked == false && poll == false ) {
     if ( hal.battery.critical() ) {
+       DPRINT(F("Battery critical! "));DDECLN(hal.battery.current());
       hal.activity.sleepForever(hal);
     }
     hal.activity.savePower<Sleep<>>(hal);
