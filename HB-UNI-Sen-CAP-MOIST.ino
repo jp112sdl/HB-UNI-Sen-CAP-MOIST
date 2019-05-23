@@ -178,7 +178,7 @@ class WeatherEventMsg : public Message {
 #define PAYLOAD_OFFSET 2
 #endif
 
-    Message::init(0xc + PAYLOAD_OFFSET + (DEVICE_CHANNEL_COUNT * 2), msgcnt, 0x53, (msgcnt % 20 == 1) ? BIDI : BCAST, batlow ? 0x80 : 0x00, 0x41);
+    Message::init(0xc + PAYLOAD_OFFSET + (DEVICE_CHANNEL_COUNT * 2), msgcnt, 0x53, (msgcnt % 20 == 1) ? (BIDI | WKMEUP) : BCAST, batlow ? 0x80 : 0x00, 0x41);
 
 #ifndef NO_DS18B20
     pload[0] = (t >> 8) & 0xff;
