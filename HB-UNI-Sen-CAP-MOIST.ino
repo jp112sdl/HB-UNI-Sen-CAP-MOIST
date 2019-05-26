@@ -30,12 +30,14 @@
   #define CC1101_MOSI_PIN         11    // PB3
   #define CC1101_MISO_PIN         12    // PB4
   #define CC1101_SCK_PIN          13    // PB5
+//  const uint8_t SENSOR_PINS[]    {14};  // PC0
+//  const uint8_t SENSOR_EN_PINS[] {7};   // PD7
   const uint8_t SENSOR_PINS[]    {14, 15, 16};    // PC0, PC1, PC2
   const uint8_t SENSOR_EN_PINS[] {7, 6, 5};       // PD7, PD6, PD5
 
-  #define DS18B20_PIN         3     // PD3
+  #define DS18B20_PIN             3     // PD3
 
-  #define BATT_RATIO_10     (10+10)/10*10  // 10R+10R with a factor of 10
+  #define BATT_RATIO_10          (10+10)/10*10  // 10R+10R with a factor of 10
 #else
   // Arduino pin for the config button
   #define CONFIG_BUTTON_PIN      8
@@ -75,8 +77,17 @@ OneWire oneWire(DS18B20_PIN);
 // all library classes are placed in the namespace 'as'
 using namespace as;
 
-//Korrekturfaktor der Clock-Ungenauigkeit, wenn keine RTC verwendet wird
-#define SYSCLOCK_FACTOR    0.88
+#ifdef STAN23PCB
+  #define USED_CLOCK        rtc
+  #define SYSCLOCK_FACTOR   1
+  // for RTC it is 1 tick per second
+  #undef seconds2ticks
+  #define seconds2ticks(s)  (s)
+#else
+  #define USED_CLOCK        sysclock
+  // correction factor for internal clock
+  #define SYSCLOCK_FACTOR   0.88
+#endif
 
 #ifdef NO_DS18B20
 #define DEVICE_MODEL  0x11
@@ -86,7 +97,7 @@ using namespace as;
 
 // define all device properties
 const struct DeviceInfo PROGMEM devinfo = {
-  {0xF3, DEVICE_MODEL, 0x00},  // Device ID
+  {0xF3, DEVICE_MODEL, 0x01},  // Device ID
   "JPCAPM0000",                // Device Serial
   {0xF3, DEVICE_MODEL},        // Device Model
   0x10,                        // Firmware Version
@@ -109,13 +120,17 @@ class Hal : public BaseHal {
   public:
     void init (const HMID& id) {
       BaseHal::init(id);
-      battery.init(seconds2ticks(60UL * 60) * SYSCLOCK_FACTOR, sysclock); //battery measure once an hour
+#ifdef STAN23PCB
+      // init real time clock - 1 tick per second
+      USED_CLOCK.init();
+#endif
+      battery.init(seconds2ticks(60UL * 60) * SYSCLOCK_FACTOR, USED_CLOCK); //battery measure once an hour
       battery.low(22);
-      battery.critical(19);
+      battery.critical(15);
     }
 
     bool runready () {
-      return sysclock.runready() || BaseHal::runready();
+        return USED_CLOCK.runready() || BaseHal::runready();
     }
 } hal;
 
@@ -277,11 +292,24 @@ public:
              }
              sens_val /= 8;
 
-             DPRINT(F("+Analog     (#")); DDEC(s + 1); DPRINT(F("): ")); DDECLN(sens_val);
-             uint16_t range = dev.channel(s + 2).getList1().HIGHValue() - dev.channel(s + 2).getList1().LOWValue();
-             uint32_t base = sens_val - dev.channel(s + 2).getList1().LOWValue();
-             uint8_t pct_inv = (100 * base) / range;
-             humidity[s] = (pct_inv > 100) ? 0 : 100 - pct_inv;
+             DPRINT(F("+Analog     (#")); DDEC(s + 1); DPRINT(F("): ")); DDEC(sens_val);
+             uint16_t upper_limit = dev.channel(s + 2).getList1().HIGHValue();
+             uint16_t lower_limit = dev.channel(s + 2).getList1().LOWValue();
+             if (sens_val > upper_limit) {
+               humidity[s] = 0;
+               DPRINTLN(F(" higher than limit!"));
+             }
+             else if (sens_val < lower_limit) {
+               humidity[s] = 100;
+               DPRINTLN(F(" lower than limit!"));
+             }
+             else {
+               uint16_t range = upper_limit - lower_limit;
+               uint16_t base = sens_val - lower_limit;
+               uint8_t pct_inv = (base * 100) / range;
+               humidity[s] = 100 - pct_inv;
+               DPRINTLN("");
+             }
 
              //humidity[s] = random(0,100);
 
@@ -305,7 +333,7 @@ public:
            msg.init(dev.nextcount(), humidity, dev.battery().low(), dev.battery().current());
 #endif
            dev.send(msg, dev.getMasterID());
-           sysclock.add(*this);
+           USED_CLOCK.add(*this);
          }
 
          uint32_t delay () {
@@ -334,7 +362,7 @@ public:
       DPRINT(F("DS18B20 Sensor "));DPRINTLN((sensorcount > 0) ? F("OK"):F("ERROR"));
 #endif
       sensarray.set(seconds2ticks(5));
-      sysclock.add(sensarray);
+      USED_CLOCK.add(sensarray);
     }
 
     virtual void configChanged () {
@@ -364,8 +392,14 @@ void loop() {
 
   if ( worked == false && poll == false ) {
     if ( hal.battery.critical() ) {
+      DPRINT(F("Battery critical! "));DDECLN(hal.battery.current());
+      Serial.flush();
       hal.activity.sleepForever(hal);
     }
+#ifdef STAN23PCB
+    hal.activity.savePower<SleepRTC>(hal);
+#else
     hal.activity.savePower<Sleep<>>(hal);
+#endif
   }
 }
