@@ -27,7 +27,9 @@ Um die [Batterielebensdauer zu erhöhen](https://asksinpp.de/Grundlagen/01_hardw
 Die Stromversorgung besteht bspw. aus **3x** AA(A)-**Batterien** (oder **4x 1.2V Akkus**).<br>
 
 ## Platine
-*TODO*
+<img src="https://raw.githubusercontent.com/stan23/myPCBs/master/HB-UNI-Sen-CAP-MOIST-T/Images/HB-UNI-Sen-CAP-MOIST.png" width=350></img><br/>
+...gibts von [>>>Marco<<<](https://github.com/stan23/myPCBs/tree/master/HB-UNI-Sen-CAP-MOIST-T)
+
 
 ## Code flashen
 - [AskSinPP Library](https://github.com/pa-pa/AskSinPP) in der Arduino IDE installieren (master-Branch ab 13.05.2019 verwenden!)
