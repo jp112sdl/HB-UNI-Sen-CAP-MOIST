@@ -340,8 +340,8 @@ void loop() {
 
   if ( worked == false && poll == false ) {
     if ( hal.battery.critical() ) {
-       DPRINT(F("Battery critical! "));DDECLN(hal.battery.current());
-       Serial.flush();
+      DPRINT(F("Battery critical! "));DDECLN(hal.battery.current());
+      Serial.flush();
       hal.activity.sleepForever(hal);
     }
     hal.activity.savePower<Sleep<>>(hal);
