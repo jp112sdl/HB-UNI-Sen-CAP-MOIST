@@ -4,9 +4,7 @@
 _*6 bei zusätzlicher Verwendung des Temperatursensors_
 
 Um die Geräteunterstützung zu aktivieren, wird die aktuellste Version des [JP-HB-Devices Addon](https://github.com/jp112sdl/JP-HB-Devices-addon/releases/latest) (mind. Version 2.7) benötigt! 
-<br/><br/>
-‼️ **Achtung:** Aufgrund eines Fehlers in der BatterySensor.h ist zurzeit die [Datei aus dem V4-Branch](https://github.com/pa-pa/AskSinPP/blob/V4/BatterySensor.h) zu verwenden!
-<br/><br/>
+<br/>
 
 ## Verdrahtung
 ![wiring](Images/wiring2.png)
