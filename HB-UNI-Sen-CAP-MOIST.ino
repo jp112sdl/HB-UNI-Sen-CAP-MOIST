@@ -231,6 +231,7 @@ public:
        public:
          uint8_t       humidity[DEVICE_CHANNEL_COUNT];
          SensorArray (UType& d) : Alarm(0), dev(d) {}
+         virtual ~SensorArray () {}
 
          void measure() {
            //enable all moisture sensors
