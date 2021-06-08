@@ -267,7 +267,7 @@ public:
              }
              else {
                uint16_t range = upper_limit - lower_limit;
-               uint16_t base = sens_val - lower_limit;
+               uint32_t base = sens_val - lower_limit;
                uint8_t pct_inv = (base * 100) / range;
                humidity[s] = 100 - pct_inv;
                DPRINTLN("");
