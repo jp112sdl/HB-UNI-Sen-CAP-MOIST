@@ -4,6 +4,7 @@
 // 2019-05-03 jp112sdl Creative Commons - http://creativecommons.org/licenses/by-nc-sa/3.0/de/
 // 2019-05-04 stan23 Creative Commons - http://creativecommons.org/licenses/by-nc-sa/3.0/de/
 //- -----------------------------------------------------------------------------------------------------------------------
+// ci-test=yes board=328p aes=no
 
 //Sensor:
 //https://www.dfrobot.com/wiki/index.php/Capacitive_Soil_Moisture_Sensor_SKU:SEN0193
@@ -217,7 +218,7 @@ class WeatherEventMsg : public Message {
 #define PAYLOAD_OFFSET 2
 #endif
 
-    Message::init(0xc + PAYLOAD_OFFSET + (DEVICE_CHANNEL_COUNT * 2), msgcnt, 0x53, (msgcnt % 20 == 1) ? BIDI : BCAST, batlow ? 0x80 : 0x00, 0x41);
+    Message::init(0xc + PAYLOAD_OFFSET + (DEVICE_CHANNEL_COUNT * 2), msgcnt, 0x53, (msgcnt % 20 == 1) ? (BIDI | WKMEUP) : BCAST, batlow ? 0x80 : 0x00, 0x41);
 
 #ifndef NO_DS18B20
     pload[0] = (t >> 8) & 0xff;
@@ -269,8 +270,8 @@ public:
 
        public:
          uint8_t       humidity[DEVICE_CHANNEL_COUNT];
-         uint8_t       sensorcount;
-         SensorArray (UType& d) : Alarm(0), dev(d), sensorcount(0) {}
+         SensorArray (UType& d) : Alarm(0), dev(d) {}
+         virtual ~SensorArray () {}
 
          void measure() {
            //enable all moisture sensors
