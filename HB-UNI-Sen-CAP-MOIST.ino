@@ -13,28 +13,50 @@
 // #define USE_OTA_BOOTLOADER
 
 // #define NO_DS18B20 //use model without temperature sensor
+#define STAN23PCB   // use stan23's PCB
 
 #define EI_NOTEXTERNAL
 #include <EnableInterrupt.h>
 #define SENSOR_ONLY
 
 // Arduino Pro mini 8 Mhz
-// Arduino pin for the config button
-#define CONFIG_BUTTON_PIN      8
-#define LED_PIN                4
-#define BATT_EN_PIN            5
-#define BATT_SENS_PIN          14  // A0
+#ifdef STAN23PCB
+  #define CONFIG_BUTTON_PIN       8     // PB0
+  #define LED_PIN                 4     // PD4
+  #define BATT_EN_PIN             18    // PC4
+  #define BATT_SENS_PIN           17    // PC3
 
-#define CC1101_GDO0_PIN        2
-#define CC1101_CS_PIN          10
-#define CC1101_MOSI_PIN        11
-#define CC1101_MISO_PIN        12
-#define CC1101_SCK_PIN         13
-const uint8_t SENSOR_PINS[]    {15, 16, 17}; //AOut Pins der Sensoren (hier A1, A2 und A3)
-//bei Verwendung von > 3 Sensoren sollten die Vcc der Sensoren auf 2 Enable Pins verteilt werden (max. Last pro AVR-Pin beachten!)
-const uint8_t SENSOR_EN_PINS[] {6};
+  #define CC1101_GDO0_PIN         2     // PD2
+  #define CC1101_CS_PIN           10    // PB2
+  #define CC1101_MOSI_PIN         11    // PB3
+  #define CC1101_MISO_PIN         12    // PB4
+  #define CC1101_SCK_PIN          13    // PB5
+//  const uint8_t SENSOR_PINS[]    {14};  // PC0
+//  const uint8_t SENSOR_EN_PINS[] {7};   // PD7
+  const uint8_t SENSOR_PINS[]    {14, 15, 16};    // PC0, PC1, PC2
+  const uint8_t SENSOR_EN_PINS[] {7, 6, 5};       // PD7, PD6, PD5
 
-#define DS18B20_PIN            3
+  #define DS18B20_PIN             3     // PD3
+
+  #define BATT_RATIO_10          (10+10)/10*10  // 10R+10R with a factor of 10
+#else
+  // Arduino pin for the config button
+  #define CONFIG_BUTTON_PIN      8
+  #define LED_PIN                4
+  #define BATT_EN_PIN            5
+  #define BATT_SENS_PIN          14  // A0
+
+  #define CC1101_GDO0_PIN        2
+  #define CC1101_CS_PIN          10
+  #define CC1101_MOSI_PIN        11
+  #define CC1101_MISO_PIN        12
+  #define CC1101_SCK_PIN         13
+  const uint8_t SENSOR_PINS[]    {15, 16, 17}; //AOut Pins der Sensoren (hier A1, A2 und A3)
+  //bei Verwendung von > 3 Sensoren sollten die Vcc der Sensoren auf 2 Enable Pins verteilt werden (max. Last pro AVR-Pin beachten!)
+  const uint8_t SENSOR_EN_PINS[] {6};
+
+  #define DS18B20_PIN            3
+#endif
 
 
 #define DEVICE_CHANNEL_COUNT sizeof(SENSOR_PINS)
@@ -56,8 +78,17 @@ OneWire oneWire(DS18B20_PIN);
 // all library classes are placed in the namespace 'as'
 using namespace as;
 
-//Korrekturfaktor der Clock-Ungenauigkeit, wenn keine RTC verwendet wird
-#define SYSCLOCK_FACTOR    0.88
+#ifdef STAN23PCB
+  #define USED_CLOCK        rtc
+  #define SYSCLOCK_FACTOR   1
+  // for RTC it is 1 tick per second
+  #undef seconds2ticks
+  #define seconds2ticks(s)  (s)
+#else
+  #define USED_CLOCK        sysclock
+  // correction factor for internal clock
+  #define SYSCLOCK_FACTOR   0.88
+#endif
 
 #ifdef NO_DS18B20
 #define DEVICE_MODEL  0x11
@@ -81,18 +112,26 @@ const struct DeviceInfo PROGMEM devinfo = {
 typedef AvrSPI<CC1101_CS_PIN, CC1101_MOSI_PIN, CC1101_MISO_PIN, CC1101_SCK_PIN> SPIType;
 typedef Radio<SPIType, CC1101_GDO0_PIN> RadioType;
 typedef StatusLed<LED_PIN> LedType;
+#ifdef STAN23PCB
+typedef AskSin<LedType, BattSensor<AsyncMeter<ExternalVCC<BATT_SENS_PIN, BATT_EN_PIN, HIGH, 0, BATT_RATIO_10>, 200>>, RadioType> BaseHal;
+#else
 typedef AskSin<LedType, BatterySensorUni<BATT_SENS_PIN, BATT_EN_PIN, 0>, RadioType> BaseHal;
+#endif
 class Hal : public BaseHal {
   public:
     void init (const HMID& id) {
       BaseHal::init(id);
-      battery.init(seconds2ticks(60UL * 60) * SYSCLOCK_FACTOR, sysclock); //battery measure once an hour
+#ifdef STAN23PCB
+      // init real time clock - 1 tick per second
+      USED_CLOCK.init();
+#endif
+      battery.init(seconds2ticks(60UL * 60) * SYSCLOCK_FACTOR, USED_CLOCK); //battery measure once an hour
       battery.low(22);
-      battery.critical(19);
+      battery.critical(15);
     }
 
     bool runready () {
-      return sysclock.runready() || BaseHal::runready();
+        return USED_CLOCK.runready() || BaseHal::runready();
     }
 } hal;
 
@@ -295,7 +334,7 @@ public:
            msg.init(dev.nextcount(), humidity, dev.battery().low(), dev.battery().current());
 #endif
            dev.send(msg, dev.getMasterID());
-           sysclock.add(*this);
+           USED_CLOCK.add(*this);
          }
 
          uint32_t delay () {
@@ -324,7 +363,7 @@ public:
       DPRINT(F("DS18B20 Sensor "));DPRINTLN((sensorcount > 0) ? F("OK"):F("ERROR"));
 #endif
       sensarray.set(seconds2ticks(5));
-      sysclock.add(sensarray);
+      USED_CLOCK.add(sensarray);
     }
 
     virtual void configChanged () {
@@ -358,6 +397,10 @@ void loop() {
       Serial.flush();
       hal.activity.sleepForever(hal);
     }
+#ifdef STAN23PCB
+    hal.activity.savePower<SleepRTC>(hal);
+#else
     hal.activity.savePower<Sleep<>>(hal);
+#endif
   }
 }
